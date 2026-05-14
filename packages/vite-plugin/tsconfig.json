@@ -4,6 +4,7 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"strict": true,
-		"types": ["node"]
+		"types": ["node"],
+		"ignoreDeprecations": "6.0"
 	}
 }

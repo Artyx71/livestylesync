@@ -49,7 +49,7 @@ function findSourceStyle(el: Element): { fileUrl: string; selector: string } | n
 	return null;
 }
 
-export function Overlay() {
+export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
 	const [picking, setPicking] = useState(false);
 	const [selected, setSelected] = useState<Element | null>(null);
@@ -65,7 +65,7 @@ export function Overlay() {
 	const [origValues, setOrigValues] = useState<Record<string, string>>({});
 	const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
 
-	const { send } = useWebSocket("ws://localhost:3100");
+	const { send } = useWebSocket(`ws://localhost:${port}`);
 
 	useEffect(() => {
 		if (!selected) return;

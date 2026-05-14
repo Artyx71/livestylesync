@@ -62,16 +62,22 @@ function patchCss(filePath: string, selector: string, prop: string, value: strin
 	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath}`);
 }
 
-export function liveStyleSync(): Plugin {
+interface LiveStyleSyncOptions {
+	port?: number;
+}
+
+export function liveStyleSync(options: LiveStyleSyncOptions = {}): Plugin {
+	const port = options.port ?? 3100;
+
 	return {
 		name: "livestylesync",
 
 		configureServer(server) {
-			const wss = new WebSocketServer({ port: 3100 });
+			const wss = new WebSocketServer({ port });
 
 			wss.on("error", (err: NodeJS.ErrnoException) => {
 				if (err.code !== "EADDRINUSE") throw err;
-				console.log("[LSS] port 3100 busy — restart Vite to reconnect");
+				console.log(`[LSS] port ${port} busy — restart Vite to reconnect`);
 			});
 
 			server.httpServer?.once("close", () => wss.close());
