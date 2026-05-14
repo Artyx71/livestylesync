@@ -11,7 +11,11 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.11"
+  },
+  "dependencies": {
+    "ws": "^8.20.1"
   }
 }

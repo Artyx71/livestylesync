@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useWebSocket } from "./useWebSocket";
 
 function rgbToHex(rgb: string): string {
 	if (!rgb || rgb === "transparent") return "#ffffff";
@@ -17,6 +18,37 @@ function getComputed(el: Element, prop: string): string {
 	return window.getComputedStyle(el).getPropertyValue(prop).trim();
 }
 
+function findSourceStyle(el: Element): { fileUrl: string; selector: string } | null {
+	for (const sheet of Array.from(document.styleSheets)) {
+		let fileUrl: string | null = sheet.href;
+
+		if (!fileUrl && sheet.ownerNode instanceof HTMLElement) {
+			fileUrl = sheet.ownerNode.getAttribute("data-vite-dev-id");
+		}
+
+		if (!fileUrl) continue;
+
+		let rules: CSSRuleList;
+		try {
+			rules = sheet.cssRules;
+		} catch {
+			continue;
+		}
+
+		for (const rule of Array.from(rules)) {
+			if (!(rule instanceof CSSStyleRule)) continue;
+			try {
+				if (el.matches(rule.selectorText)) {
+					return { fileUrl, selector: rule.selectorText };
+				}
+			} catch {
+				continue;
+			}
+		}
+	}
+	return null;
+}
+
 export function Overlay() {
 	const [open, setOpen] = useState(false);
 	const [picking, setPicking] = useState(false);
@@ -27,6 +59,8 @@ export function Overlay() {
 	const [margin, setMargin] = useState("0");
 	const [color, setColor] = useState("#000000");
 	const [bg, setBg] = useState("#ffffff");
+	const [source, setSource] = useState<{ fileUrl: string; selector: string } | null>(null);
+	const { send } = useWebSocket("ws://localhost:3100");
 
 	useEffect(() => {
 		if (!selected) return;
@@ -34,6 +68,7 @@ export function Overlay() {
 		setMargin(getComputed(selected, "margin-top").replace("px", ""));
 		setColor(rgbToHex(getComputed(selected, "color")));
 		setBg(rgbToHex(getComputed(selected, "background-color")));
+		setSource(findSourceStyle(selected));
 	}, [selected]);
 
 	const apply = (prop: string, value: string) => {
@@ -181,7 +216,15 @@ export function Overlay() {
 									: ""}
 							</p>
 
-							<p style={{ margin: "12px 0 6px", color: "#555", fontSize: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+							<p
+								style={{
+									margin: "12px 0 6px",
+									color: "#555",
+									fontSize: 10,
+									textTransform: "uppercase",
+									letterSpacing: 1,
+								}}
+							>
 								Spacing
 							</p>
 
@@ -195,6 +238,7 @@ export function Overlay() {
 										onChange={(e) => {
 											setPadding(e.target.value);
 											apply("padding", e.target.value + "px");
+											send({ ...source, prop: "padding", value: e.target.value + "px" });
 										}}
 									/>
 									<span style={{ fontSize: 10, color: "#555" }}>px</span>
@@ -211,13 +255,22 @@ export function Overlay() {
 										onChange={(e) => {
 											setMargin(e.target.value);
 											apply("margin", e.target.value + "px");
+											send({ ...source, prop: "margin", value: e.target.value + "px" });
 										}}
 									/>
 									<span style={{ fontSize: 10, color: "#555" }}>px</span>
 								</div>
 							</div>
 
-							<p style={{ margin: "12px 0 6px", color: "#555", fontSize: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+							<p
+								style={{
+									margin: "12px 0 6px",
+									color: "#555",
+									fontSize: 10,
+									textTransform: "uppercase",
+									letterSpacing: 1,
+								}}
+							>
 								Colors
 							</p>
 
@@ -226,10 +279,16 @@ export function Overlay() {
 								<input
 									type="color"
 									value={color}
-									style={{ ...numInput, width: 40, padding: 2, cursor: "pointer" }}
+									style={{
+										...numInput,
+										width: 40,
+										padding: 2,
+										cursor: "pointer",
+									}}
 									onChange={(e) => {
 										setColor(e.target.value);
 										apply("color", e.target.value);
+										send({ ...source, prop: "color", value: e.target.value });
 									}}
 								/>
 							</div>
@@ -239,10 +298,16 @@ export function Overlay() {
 								<input
 									type="color"
 									value={bg}
-									style={{ ...numInput, width: 40, padding: 2, cursor: "pointer" }}
+									style={{
+										...numInput,
+										width: 40,
+										padding: 2,
+										cursor: "pointer",
+									}}
 									onChange={(e) => {
 										setBg(e.target.value);
 										apply("backgroundColor", e.target.value);
+										send({ ...source, prop: "backgroundColor", value: e.target.value });
 									}}
 								/>
 							</div>
