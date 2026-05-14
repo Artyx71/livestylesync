@@ -71,6 +71,7 @@ h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
+  padding: 250px;
 }
 
 h1 {
