@@ -10,7 +10,7 @@ importers:
 
   apps/demo:
     dependencies:
-      '@livestylesync/overlay':
+      livestylesync-overlay:
         specifier: workspace:*
         version: link:../../packages/overlay
       react:

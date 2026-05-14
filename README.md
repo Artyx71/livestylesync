@@ -15,12 +15,7 @@ Early MVP. Works with React + Vite + plain CSS/SCSS.
 ## Installation
 
 ```bash
-# Not yet published to npm
-# Clone and run the demo to try it
-git clone https://github.com/livestylesync/livestylesync
-cd livestylesync
-pnpm install
-cd apps/demo && pnpm dev
+npm install livestylesync-overlay livestylesync-vite-plugin
 ```
 
 ## How to add to your project
@@ -29,7 +24,7 @@ cd apps/demo && pnpm dev
 
 ```ts
 // vite.config.ts
-import { liveStyleSync } from "@livestylesync/vite-plugin";
+import { liveStyleSync } from "livestylesync-vite-plugin";
 
 export default defineConfig({
   plugins: [liveStyleSync()],
@@ -40,8 +35,15 @@ export default defineConfig({
 
 ```ts
 // main.ts / main.tsx
-import { mount } from "@livestylesync/overlay";
+import { mount } from "livestylesync-overlay";
 mount();
+```
+
+## Options
+
+```ts
+liveStyleSync({ port: 3100 }) // default port
+mount({ port: 3100 })         // must match
 ```
 
 ## How it works
@@ -54,6 +56,15 @@ Browser overlay → WebSocket → Vite plugin → CSS file → HMR → browser
 - Changes are previewed inline instantly
 - "Apply to file" writes the patch to the source CSS file
 - Vite HMR picks up the change automatically
+
+## Try the demo
+
+```bash
+git clone https://github.com/livestylesync/livestylesync
+cd livestylesync
+pnpm install
+cd apps/demo && pnpm dev
+```
 
 ## Roadmap
 

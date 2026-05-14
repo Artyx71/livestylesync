@@ -1,5 +1,5 @@
 {
-	"name": "@livestylesync/overlay",
+	"name": "livestylesync-overlay",
 	"version": "0.1.0",
 	"description": "Browser overlay for LiveStyleSync",
 	"license": "MIT",
