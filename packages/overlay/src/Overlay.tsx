@@ -55,25 +55,46 @@ export function Overlay() {
 	const [selected, setSelected] = useState<Element | null>(null);
 	const highlightRef = useRef<HTMLDivElement>(null);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
+
 	const [padding, setPadding] = useState("0");
 	const [margin, setMargin] = useState("0");
 	const [color, setColor] = useState("#000000");
 	const [bg, setBg] = useState("#ffffff");
 	const [source, setSource] = useState<{ fileUrl: string; selector: string } | null>(null);
+
+	const [origValues, setOrigValues] = useState<Record<string, string>>({});
+	const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
+
 	const { send } = useWebSocket("ws://localhost:3100");
 
 	useEffect(() => {
 		if (!selected) return;
-		setPadding(getComputed(selected, "padding-top").replace("px", ""));
-		setMargin(getComputed(selected, "margin-top").replace("px", ""));
-		setColor(rgbToHex(getComputed(selected, "color")));
-		setBg(rgbToHex(getComputed(selected, "background-color")));
+		const p = getComputed(selected, "padding-top").replace("px", "");
+		const m = getComputed(selected, "margin-top").replace("px", "");
+		const c = rgbToHex(getComputed(selected, "color"));
+		const b = rgbToHex(getComputed(selected, "background-color"));
+
+		setPadding(p);
+		setMargin(m);
+		setColor(c);
+		setBg(b);
 		setSource(findSourceStyle(selected));
+		setOrigValues({ padding: p + "px", margin: m + "px", color: c, "background-color": b });
+		setPendingChanges({});
 	}, [selected]);
 
 	const apply = (prop: string, value: string) => {
 		if (!selected) return;
 		(selected as HTMLElement).style[prop as any] = value;
+	};
+
+	const applyToFile = () => {
+		if (!source) return;
+		Object.entries(pendingChanges).forEach(([prop, value]) => {
+			send({ ...source, prop, value });
+		});
+		setOrigValues((prev) => ({ ...prev, ...pendingChanges }));
+		setPendingChanges({});
 	};
 
 	const row: React.CSSProperties = {
@@ -95,6 +116,14 @@ export function Overlay() {
 		padding: "2px 6px",
 		width: 60,
 		textAlign: "right",
+	};
+
+	const sectionLabel: React.CSSProperties = {
+		margin: "12px 0 6px",
+		color: "#555",
+		fontSize: 10,
+		textTransform: "uppercase",
+		letterSpacing: 1,
 	};
 
 	useEffect(() => {
@@ -216,17 +245,7 @@ export function Overlay() {
 									: ""}
 							</p>
 
-							<p
-								style={{
-									margin: "12px 0 6px",
-									color: "#555",
-									fontSize: 10,
-									textTransform: "uppercase",
-									letterSpacing: 1,
-								}}
-							>
-								Spacing
-							</p>
+							<p style={sectionLabel}>Spacing</p>
 
 							<div style={row}>
 								<span>Padding</span>
@@ -238,7 +257,7 @@ export function Overlay() {
 										onChange={(e) => {
 											setPadding(e.target.value);
 											apply("padding", e.target.value + "px");
-											send({ ...source, prop: "padding", value: e.target.value + "px" });
+											setPendingChanges((prev) => ({ ...prev, padding: e.target.value + "px" }));
 										}}
 									/>
 									<span style={{ fontSize: 10, color: "#555" }}>px</span>
@@ -255,40 +274,25 @@ export function Overlay() {
 										onChange={(e) => {
 											setMargin(e.target.value);
 											apply("margin", e.target.value + "px");
-											send({ ...source, prop: "margin", value: e.target.value + "px" });
+											setPendingChanges((prev) => ({ ...prev, margin: e.target.value + "px" }));
 										}}
 									/>
 									<span style={{ fontSize: 10, color: "#555" }}>px</span>
 								</div>
 							</div>
 
-							<p
-								style={{
-									margin: "12px 0 6px",
-									color: "#555",
-									fontSize: 10,
-									textTransform: "uppercase",
-									letterSpacing: 1,
-								}}
-							>
-								Colors
-							</p>
+							<p style={sectionLabel}>Colors</p>
 
 							<div style={row}>
 								<span>Color</span>
 								<input
 									type="color"
 									value={color}
-									style={{
-										...numInput,
-										width: 40,
-										padding: 2,
-										cursor: "pointer",
-									}}
+									style={{ ...numInput, width: 40, padding: 2, cursor: "pointer" }}
 									onChange={(e) => {
 										setColor(e.target.value);
 										apply("color", e.target.value);
-										send({ ...source, prop: "color", value: e.target.value });
+										setPendingChanges((prev) => ({ ...prev, color: e.target.value }));
 									}}
 								/>
 							</div>
@@ -298,19 +302,47 @@ export function Overlay() {
 								<input
 									type="color"
 									value={bg}
-									style={{
-										...numInput,
-										width: 40,
-										padding: 2,
-										cursor: "pointer",
-									}}
+									style={{ ...numInput, width: 40, padding: 2, cursor: "pointer" }}
 									onChange={(e) => {
 										setBg(e.target.value);
 										apply("backgroundColor", e.target.value);
-										send({ ...source, prop: "backgroundColor", value: e.target.value });
+										setPendingChanges((prev) => ({ ...prev, "background-color": e.target.value }));
 									}}
 								/>
 							</div>
+
+							{Object.keys(pendingChanges).length > 0 && (
+								<>
+									<p style={{ ...sectionLabel, color: "#f59e0b" }}>Pending</p>
+
+									{Object.entries(pendingChanges).map(([prop, value]) => (
+										<div key={prop} style={{ ...row, color: "#f59e0b", marginBottom: 4 }}>
+											<span>{prop}</span>
+											<span style={{ fontSize: 10 }}>
+												{origValues[prop]} → {value}
+											</span>
+										</div>
+									))}
+
+									<button
+										onClick={applyToFile}
+										style={{
+											width: "100%",
+											padding: "6px 0",
+											marginTop: 8,
+											background: source ? "#065f46" : "#2d2d4e",
+											color: source ? "#6ee7b7" : "#555",
+											border: "1px solid " + (source ? "#059669" : "#444"),
+											borderRadius: 6,
+											cursor: source ? "pointer" : "not-allowed",
+											fontFamily: "monospace",
+											fontSize: 11,
+										}}
+									>
+										{source ? "✓ Apply to file" : "✗ No CSS source found"}
+									</button>
+								</>
+							)}
 						</>
 					)}
 				</div>
