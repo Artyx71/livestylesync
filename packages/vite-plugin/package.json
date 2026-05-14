@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync-vite-plugin",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Vite plugin for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
@@ -12,7 +12,7 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
-	"files": ["dist"],
+	"files": ["dist", "README.md"],
 	"scripts": {
 		"build": "tsup src/index.ts --format esm --dts --external vite --external ws"
 	},
