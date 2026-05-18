@@ -19,8 +19,8 @@
 		"build": "tsup src/overlay.ts src/vite-plugin.ts --format esm --dts --external vite --external ws"
 	},
 	"dependencies": {
-		"livestylesync-overlay": "^0.1.7",
-		"livestylesync-vite-plugin": "^0.1.7"
+		"livestylesync-overlay": "^0.1.8",
+		"livestylesync-vite-plugin": "^0.1.8"
 	},
 	"devDependencies": {
 		"@types/node": "^24.12.2",
