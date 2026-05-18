@@ -4,23 +4,21 @@ Edit styles in the browser. Changes go straight to your source files.
 
 ## What it does
 
-LiveStyleSync adds a small overlay to your dev environment. Click any element, change spacing or colors in the panel, and the changes write back to your CSS file — with HMR updating the browser instantly.
+LiveStyleSync adds a small overlay to your dev environment. Click any element,
+tweak spacing or colors in the panel, and the changes write back to your CSS source —
+Vite HMR updates the browser instantly.
 
 No copy-pasting values between DevTools and your editor.
 
-## Status
-
-Early MVP. Works with React + Vite + plain CSS/SCSS.
-
-## Installation
+## Install
 
 ```bash
 npm install livestylesync-overlay livestylesync-vite-plugin
 ```
 
-## How to add to your project
+## Setup
 
-**1. Add the Vite plugin**
+**1. Vite plugin**
 
 ```ts
 // vite.config.ts
@@ -31,7 +29,7 @@ export default defineConfig({
 });
 ```
 
-**2. Mount the overlay**
+**2. Overlay**
 
 ```ts
 // main.ts / main.tsx
@@ -42,40 +40,54 @@ mount();
 ## Options
 
 ```ts
-liveStyleSync({ port: 3100 }) // default port
+liveStyleSync({ port: 3100 }) // default
 mount({ port: 3100 })         // must match
 ```
+
+## Features
+
+- **Element picker** — click any element to inspect it
+- **DOM breadcrumbs** — navigate to parent/child elements via the path bar
+- **Pseudo-state tabs** — edit `:hover`, `:focus`, `:active` styles separately
+- **Responsive tabs** — edit `@media` breakpoint styles (e.g. `≤1024px`)
+- **Instant preview** — changes apply before saving
+- **Write to source** — patches the exact CSS rule in your file, Vite HMR picks it up
+
+## Works with
+
+| Format | Support |
+|---|---|
+| Plain CSS | ✅ |
+| CSS Modules | ✅ |
+| SCSS | ✅ |
+| Vue scoped styles | ✅ |
+| React / Vue / Svelte / any framework | ✅ (no React peer dep) |
 
 ## How it works
 
 ```
-Browser overlay → WebSocket → Vite plugin → CSS file → HMR → browser
+Click element → overlay reads CSSOM → edit value → WebSocket → Vite plugin patches file → HMR
 ```
-
-- Overlay finds which CSS file and selector apply to the clicked element
-- Changes are previewed inline instantly
-- "Apply to file" writes the patch to the source CSS file
-- Vite HMR picks up the change automatically
 
 ## Try the demo
 
 ```bash
 git clone https://github.com/livestylesync/livestylesync
-cd livestylesync
-pnpm install
+cd livestylesync && pnpm install
 cd apps/demo && pnpm dev
 ```
 
 ## Roadmap
 
-- [x] Element picker with highlight
-- [x] Style editor (spacing, colors)
-- [x] Diff preview before saving
-- [x] CSS file patching via WebSocket
-- [ ] CSS Modules support
-- [ ] SCSS support
+- [x] Element picker + highlight
+- [x] CSS / SCSS / CSS Modules / Vue scoped styles
+- [x] Pseudo-state editing (:hover, :focus…)
+- [x] @media responsive editing
+- [x] DOM breadcrumb navigation
+- [x] No React peer dependency (Preact bundled)
+- [ ] Next.js / webpack support
 - [ ] Tailwind utility detection
-- [ ] Figma sync (Pro)
+- [ ] Rollback / undo
 
 ## License
 

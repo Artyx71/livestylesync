@@ -1,6 +1,6 @@
 # livestylesync-vite-plugin
 
-Vite plugin for [LiveStyleSync](https://github.com/livestylesync/livestylesync) — edit styles in the browser, changes go straight to your source files.
+Vite plugin for [LiveStyleSync](https://github.com/livestylesync/livestylesync).
 
 ## Install
 
@@ -20,24 +20,28 @@ export default defineConfig({
 });
 ```
 
-With custom port:
+Custom port:
 
 ```ts
 plugins: [liveStyleSync({ port: 3200 })]
 ```
 
-Also add the overlay — see [livestylesync-overlay](https://www.npmjs.com/package/livestylesync-overlay).
+Also add the overlay → [livestylesync-overlay](https://www.npmjs.com/package/livestylesync-overlay)
 
 ## How it works
 
-The plugin starts a WebSocket server (default port 3100) when the Vite dev server starts. It receives style patches from the browser overlay, finds the matching CSS rule in your source file, updates the value, and saves the file. Vite HMR picks up the change and updates the browser automatically.
+Starts a WebSocket server when Vite dev server starts. Receives style patches
+from the browser overlay and writes them directly to the source file.
+Supports both traditional and CSS-nesting `@media` block formats.
 
-## Works with
+## Supports
 
-- Plain CSS
-- SCSS
-
-CSS Modules and scoped styles coming in v0.2.
+| Format | Notes |
+|---|---|
+| Plain CSS | nested `@media` (CSS nesting) + traditional |
+| SCSS | nested rules via PostCSS AST |
+| CSS Modules | hash-stripped selector matching |
+| Vue scoped styles | `<style scoped>` block patching |
 
 ## License
 
