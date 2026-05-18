@@ -21,29 +21,83 @@ function getPseudoLabel(selector: string): string {
 	return "base";
 }
 
+function shortMedia(mq: string): string {
+	const maxW = /max-width:\s*(\d+\w*)/.exec(mq);
+	const minW = /min-width:\s*(\d+\w*)/.exec(mq);
+	if (maxW) return `≤${maxW[1]}`;
+	if (minW) return `≥${minW[1]}`;
+	return "@media";
+}
+
+function groupTabLabel(g: RuleGroup): string {
+	if (g.mediaQuery) {
+		const mq = shortMedia(g.mediaQuery);
+		return g.label !== "base" ? `${mq} ${g.label}` : mq;
+	}
+	return g.label;
+}
+
+function getAncestorPath(el: Element): Element[] {
+	const path: Element[] = [];
+	let cur: Element | null = el;
+	while (cur && cur.tagName !== "BODY" && cur.tagName !== "HTML") {
+		path.unshift(cur);
+		cur = cur.parentElement;
+	}
+	return path;
+}
+
+function elLabel(el: Element): string {
+	const tag = el.tagName.toLowerCase();
+	const id = el.id ? `#${el.id}` : "";
+	const cls = el.classList[0] ? `.${el.classList[0]}` : "";
+	return `${tag}${id || cls}`;
+}
+
 interface RuleGroup {
 	fileUrl: string;
 	selector: string;
 	label: string;
 	styles: Record<string, string>;
+	mediaQuery?: string;
 }
 
-function* iterateStyleRules(rules: CSSRuleList): Generator<CSSStyleRule> {
+function* iterateStyleRules(
+	rules: CSSRuleList,
+	mediaQuery?: string,
+	parentSel?: string,
+): Generator<{ rule: CSSStyleRule; mediaQuery?: string; parentSel?: string }> {
 	for (const rule of Array.from(rules)) {
 		if (rule instanceof CSSStyleRule) {
-			yield rule;
+			yield { rule, mediaQuery, parentSel };
+			const mySel = rule.selectorText.includes("&") && parentSel
+				? rule.selectorText.replace(/&/g, parentSel).trim()
+				: rule.selectorText;
 			if ((rule as unknown as { cssRules?: CSSRuleList }).cssRules?.length) {
-				yield* iterateStyleRules((rule as unknown as { cssRules: CSSRuleList }).cssRules);
+				yield* iterateStyleRules(
+					(rule as unknown as { cssRules: CSSRuleList }).cssRules,
+					mediaQuery,
+					mySel,
+				);
 			}
-		} else if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) {
-			yield* iterateStyleRules(rule.cssRules);
+		} else if (rule instanceof CSSMediaRule) {
+			yield* iterateStyleRules(rule.cssRules, rule.conditionText, parentSel);
+		} else if (rule instanceof CSSSupportsRule) {
+			yield* iterateStyleRules(rule.cssRules, mediaQuery, parentSel);
+		} else if ("style" in rule) {
+			// CSSNestedDeclarations (Chrome 130+): declarations inside @media without a selector
+			const synth = {
+				selectorText: parentSel ?? "&",
+				style: (rule as unknown as { style: CSSStyleDeclaration }).style,
+			} as unknown as CSSStyleRule;
+			yield { rule: synth, mediaQuery, parentSel };
 		}
 	}
 }
 
 function findAllSourceStyles(el: Element): RuleGroup[] {
 	const groups: RuleGroup[] = [];
-	const seenSelectors = new Set<string>();
+	const seenKeys = new Set<string>();
 
 	for (const sheet of Array.from(document.styleSheets)) {
 		let fileUrl: string | null = sheet.href;
@@ -61,29 +115,43 @@ function findAllSourceStyles(el: Element): RuleGroup[] {
 			continue;
 		}
 
-		for (const rule of iterateStyleRules(rules)) {
-			if (rule.selectorText === "*") continue;
+		// Track selectors matched in this sheet to resolve "&" nesting selector
+		const matchedInSheet: string[] = [];
 
+		for (const { rule, mediaQuery, parentSel } of iterateStyleRules(rules)) {
 			const raw = rule.selectorText;
-			const stripped = stripInteractivePseudos(raw);
-			const isPseudo = stripped !== raw;
+
+			// Resolve CSS nesting "&" using parent context or last matched selector
+			let effectiveRaw = raw;
+			if (raw.includes("&")) {
+				const resolveWith = parentSel ?? matchedInSheet[matchedInSheet.length - 1];
+				if (resolveWith) effectiveRaw = raw.replace(/&/g, resolveWith).trim();
+			}
+
+			if (effectiveRaw === "*") continue;
+
+			const stripped = stripInteractivePseudos(effectiveRaw);
+			const isPseudo = stripped !== effectiveRaw;
 
 			let matches = false;
-			try { matches = el.matches(raw); } catch { /* skip */ }
+			try { matches = el.matches(effectiveRaw); } catch { /* skip */ }
 
 			if (!matches && isPseudo && stripped) {
 				try { matches = el.matches(stripped); } catch { /* skip */ }
 			}
 
 			if (!matches) continue;
-			if (seenSelectors.has(raw)) continue;
-			seenSelectors.add(raw);
+			matchedInSheet.push(effectiveRaw);
+
+			const seenKey = `${effectiveRaw}|||${mediaQuery ?? ""}`;
+			if (seenKeys.has(seenKey)) continue;
+			seenKeys.add(seenKey);
 
 			const isCssModule = /\.module\.css$/.test(fileUrl);
 			const isVue = fileUrl.includes("?vue&type=style");
-			const isScoped = /\[data-v-[a-f0-9]+\]/.test(raw);
+			const isScoped = /\[data-v-[a-f0-9]+\]/.test(effectiveRaw);
 
-			let selector = raw.replace(/\[data-v-[a-f0-9]+\]/g, "").trim();
+			let selector = effectiveRaw.replace(/\[data-v-[a-f0-9]+\]/g, "").trim();
 
 			if (isCssModule) {
 				selector = selector.replace(/\._[^.\s,>~+[\]]+/g, (match) => {
@@ -107,7 +175,7 @@ function findAllSourceStyles(el: Element): RuleGroup[] {
 			if (Object.keys(styles).length === 0) continue;
 
 			const label = getPseudoLabel(selector);
-			const group = { fileUrl: cleanUrl, selector, label, styles };
+			const group: RuleGroup = { fileUrl: cleanUrl, selector, label, styles, mediaQuery };
 
 			if (isScoped) {
 				groups.unshift(group);
@@ -117,14 +185,13 @@ function findAllSourceStyles(el: Element): RuleGroup[] {
 		}
 	}
 
-	// Keep only the base rule with the most properties (most specific)
-	const baseGroups = groups.filter((g) => g.label === "base");
+	const baseGroups = groups.filter((g) => g.label === "base" && !g.mediaQuery);
 	const bestBase = baseGroups.reduce<RuleGroup | null>(
 		(best, g) => (!best || Object.keys(g.styles).length > Object.keys(best.styles).length) ? g : best,
 		null
 	);
-	const pseudo = groups.filter((g) => g.label !== "base");
-	return bestBase ? [bestBase, ...pseudo] : pseudo;
+	const rest = groups.filter((g) => g.label !== "base" || g.mediaQuery);
+	return bestBase ? [bestBase, ...rest] : rest;
 }
 
 export function Overlay({ port = 3100 }: { port?: number }) {
@@ -145,36 +212,38 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const { send } = useWebSocket(`ws://localhost:${port}`);
 
 	const activeGroup = ruleGroups[activeIdx] ?? null;
-	const activeStyles = activeGroup ? (groupStyles[activeGroup.selector] ?? {}) : {};
-	const activePending = activeGroup ? (allPending[activeGroup.selector] ?? {}) : {};
+	const activeStyles = activeGroup ? (groupStyles[activeGroup.selector + (activeGroup.mediaQuery ?? "")] ?? {}) : {};
+	const activePending = activeGroup ? (allPending[activeGroup.selector + (activeGroup.mediaQuery ?? "")] ?? {}) : {};
 
 	useEffect(() => {
 		if (!selected) return;
 		const groups = findAllSourceStyles(selected);
 		setRuleGroups(groups);
 		setActiveIdx(0);
-		setGroupStyles(Object.fromEntries(groups.map((g) => [g.selector, g.styles])));
+		setGroupStyles(Object.fromEntries(groups.map((g) => [g.selector + (g.mediaQuery ?? ""), g.styles])));
 		setAllPending({});
 		setNewProp("");
 		setNewValue("");
 	}, [selected]);
 
+	const groupKey = (g: RuleGroup) => g.selector + (g.mediaQuery ?? "");
+
 	const handleChange = (prop: string, value: string) => {
 		if (!activeGroup) return;
-		const sel = activeGroup.selector;
+		const key = groupKey(activeGroup);
 		(selected as HTMLElement)?.style.setProperty(prop, value);
-		setGroupStyles((prev) => ({ ...prev, [sel]: { ...prev[sel], [prop]: value } }));
-		setAllPending((prev) => ({ ...prev, [sel]: { ...prev[sel], [prop]: value } }));
+		setGroupStyles((prev) => ({ ...prev, [key]: { ...prev[key], [prop]: value } }));
+		setAllPending((prev) => ({ ...prev, [key]: { ...prev[key], [prop]: value } }));
 	};
 
 	const handleAdd = () => {
 		const prop = newProp.trim();
 		const value = newValue.trim();
 		if (!prop || !value || !activeGroup) return;
-		const sel = activeGroup.selector;
+		const key = groupKey(activeGroup);
 		(selected as HTMLElement)?.style.setProperty(prop, value);
-		setGroupStyles((prev) => ({ ...prev, [sel]: { ...prev[sel], [prop]: value } }));
-		setAllPending((prev) => ({ ...prev, [sel]: { ...prev[sel], [prop]: value } }));
+		setGroupStyles((prev) => ({ ...prev, [key]: { ...prev[key], [prop]: value } }));
+		setAllPending((prev) => ({ ...prev, [key]: { ...prev[key], [prop]: value } }));
 		setNewProp("");
 		setNewValue("");
 	};
@@ -183,17 +252,23 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const hasSource = ruleGroups.length > 0;
 
 	const applyToFile = () => {
-		Object.entries(allPending).forEach(([selector, changes]) => {
-			const group = ruleGroups.find((g) => g.selector === selector);
+		Object.entries(allPending).forEach(([key, changes]) => {
+			const group = ruleGroups.find((g) => groupKey(g) === key);
 			if (!group) return;
 			Object.entries(changes).forEach(([prop, value]) => {
-				send({ fileUrl: group.fileUrl, selector, prop, value });
+				send({
+					fileUrl: group.fileUrl,
+					selector: group.selector,
+					prop,
+					value,
+					mediaQuery: group.mediaQuery,
+				});
 			});
 		});
 		setGroupStyles((prev) => {
 			const next = { ...prev };
-			Object.entries(allPending).forEach(([sel, changes]) => {
-				next[sel] = { ...next[sel], ...changes };
+			Object.entries(allPending).forEach(([key, changes]) => {
+				next[key] = { ...next[key], ...changes };
 			});
 			return next;
 		});
@@ -349,17 +424,36 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 					{selected && (
 						<>
-							<p style={{ margin: "8px 0 6px", color: "#7C3AED", fontSize: 11 }}>
-								{selected.tagName.toLowerCase()}
-								{selected.className ? "." + String(selected.className).split(" ")[0] : ""}
-							</p>
+							<div style={{ display: "flex", flexWrap: "wrap", gap: 2, margin: "8px 0 6px", alignItems: "center" }}>
+								{getAncestorPath(selected).map((ancestor, i, arr) => (
+									<span key={i} style={{ display: "flex", alignItems: "center", gap: 2 }}>
+										<button
+											onClick={() => setSelected(ancestor)}
+											style={{
+												background: ancestor === selected ? "#2d2d4e" : "transparent",
+												border: `1px solid ${ancestor === selected ? "#7C3AED" : "transparent"}`,
+												borderRadius: 3,
+												color: ancestor === selected ? "#7C3AED" : "#555",
+												cursor: "pointer",
+												fontFamily: "monospace",
+												fontSize: 10,
+												padding: "1px 4px",
+											}}
+										>
+											{elLabel(ancestor)}
+										</button>
+										{i < arr.length - 1 && <span style={{ color: "#333", fontSize: 10 }}>›</span>}
+									</span>
+								))}
+							</div>
 
 							{ruleGroups.length > 1 && (
 								<div style={{ display: "flex", gap: 4, marginBottom: 10, flexWrap: "wrap" }}>
 									{ruleGroups.map((g, i) => (
 										<button
-											key={g.selector}
+											key={groupKey(g)}
 											onClick={() => setActiveIdx(i)}
+											title={g.mediaQuery ?? ""}
 											style={{
 												padding: "2px 8px",
 												background: i === activeIdx ? "#7C3AED" : "#2d2d4e",
@@ -371,8 +465,8 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 												fontSize: 10,
 											}}
 										>
-											{g.label}
-											{allPending[g.selector] && Object.keys(allPending[g.selector]).length > 0 && (
+											{groupTabLabel(g)}
+											{allPending[groupKey(g)] && Object.keys(allPending[groupKey(g)]).length > 0 && (
 												<span style={{ color: "#f59e0b", marginLeft: 4 }}>●</span>
 											)}
 										</button>

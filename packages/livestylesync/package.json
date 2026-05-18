@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"description": "Edit styles in the browser. Changes go straight to your source files.",
 	"license": "MIT",
 	"type": "module",
@@ -16,15 +16,14 @@
 	},
 	"files": ["dist", "README.md"],
 	"scripts": {
-		"build": "tsup src/overlay.ts src/vite-plugin.ts --format esm --dts --external react --external react-dom --external vite --external ws"
+		"build": "tsup src/overlay.ts src/vite-plugin.ts --format esm --dts --external vite --external ws"
 	},
 	"dependencies": {
-		"livestylesync-overlay": "^0.1.1",
-		"livestylesync-vite-plugin": "^0.1.1"
+		"livestylesync-overlay": "^0.1.7",
+		"livestylesync-vite-plugin": "^0.1.7"
 	},
 	"devDependencies": {
 		"@types/node": "^24.12.2",
-		"@types/react": "^19.2.14",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
 		"vite": "^8.0.11"
