@@ -26,7 +26,16 @@ function findSourceStyle(el: Element): { fileUrl: string; selector: string; styl
 			try {
 				if (el.matches(rule.selectorText)) {
 					const isScoped = /\[data-v-[a-f0-9]+\]/.test(rule.selectorText);
-					const selector = rule.selectorText.replace(/\[data-v-[a-f0-9]+\]/g, "").trim();
+					const isCssModule = /\.module\.css$/.test(fileUrl);
+					let selector = rule.selectorText.replace(/\[data-v-[a-f0-9]+\]/g, "").trim();
+					if (isCssModule) {
+						selector = selector.replace(/\._[^.\s,>~+[\]]+/g, (match) => {
+							let name = match.slice(2); // strip ._
+							name = name.replace(/_\d+$/, ""); // strip _17
+							name = name.replace(/_[a-z0-9]{4,8}$/, ""); // strip _lhkgo
+							return "." + name;
+						});
+					}
 					const cleanUrl = fileUrl.includes("?vue&type=style")
 						? fileUrl.split("?")[0]
 						: fileUrl;
