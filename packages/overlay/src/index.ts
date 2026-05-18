@@ -8,10 +8,11 @@ interface MountOptions {
 }
 
 export function mount(options: MountOptions = {}) {
-	const container = document.createElement("div");
-	container.id = "livestylesync-root";
-	document.body.appendChild(container);
-	createRoot(container).render(
+	const host = document.createElement("div");
+	host.id = "livestylesync-root";
+	document.body.appendChild(host);
+	const shadow = host.attachShadow({ mode: "open" });
+	createRoot(shadow).render(
 		createElement(ErrorBoundary, null,
 			createElement(Overlay, { port: options.port ?? 3100 })
 		)

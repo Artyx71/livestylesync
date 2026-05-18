@@ -183,8 +183,8 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 			const h = highlightRef.current;
 			if (!h) return;
 			h.style.display = "block";
-			h.style.top = rect.top + window.scrollY + "px";
-			h.style.left = rect.left + window.scrollX + "px";
+			h.style.top = rect.top + "px";
+			h.style.left = rect.left + "px";
 			h.style.width = rect.width + "px";
 			h.style.height = rect.height + "px";
 		};
@@ -214,7 +214,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 				ref={highlightRef}
 				style={{
 					display: "none",
-					position: "absolute",
+					position: "fixed",
 					pointerEvents: "none",
 					outline: "2px solid #3B82F6",
 					background: "rgba(59,130,246,0.08)",
