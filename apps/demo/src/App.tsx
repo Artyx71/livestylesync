@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import './test.scss'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -29,6 +30,11 @@ function App() {
           Count is {count}
         </button>
       </section>
+
+      <div className="demo-card">
+        <p className="title">SCSS Test Card</p>
+        <p className="subtitle">Edit me via LiveStyleSync</p>
+      </div>
 
       <div className="ticks"></div>
 

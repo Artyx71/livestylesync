@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync-vite-plugin",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "Vite plugin for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
@@ -14,13 +14,15 @@
 	},
 	"files": ["dist", "README.md"],
 	"scripts": {
-		"build": "tsup src/index.ts --format esm --dts --external vite --external ws"
+		"build": "tsup src/index.ts --format esm --dts --external vite --external ws --external postcss --external postcss-scss"
 	},
 	"peerDependencies": {
 		"vite": ">=4"
 	},
 	"dependencies": {
-		"ws": "^8.20.1"
+		"ws": "^8.20.1",
+		"postcss": "^8.5.0",
+		"postcss-scss": "^4.0.9"
 	},
 	"devDependencies": {
 		"@types/node": "^24.12.2",
