@@ -19,6 +19,8 @@ function getComputed(el: Element, prop: string): string {
 }
 
 function findSourceStyle(el: Element): { fileUrl: string; selector: string } | null {
+	const matches: { fileUrl: string; selector: string; scoped: boolean }[] = [];
+
 	for (const sheet of Array.from(document.styleSheets)) {
 		let fileUrl: string | null = sheet.href;
 
@@ -37,16 +39,24 @@ function findSourceStyle(el: Element): { fileUrl: string; selector: string } | n
 
 		for (const rule of Array.from(rules)) {
 			if (!(rule instanceof CSSStyleRule)) continue;
+			if (rule.selectorText === "*") continue;
 			try {
 				if (el.matches(rule.selectorText)) {
-					return { fileUrl, selector: rule.selectorText };
+					const isScoped = /\[data-v-[a-f0-9]+\]/.test(rule.selectorText);
+					const selector = rule.selectorText.replace(/\[data-v-[a-f0-9]+\]/g, "").trim();
+					const cleanUrl = fileUrl.includes("?vue&type=style")
+						? fileUrl.split("?")[0]
+						: fileUrl;
+					matches.push({ fileUrl: cleanUrl, selector, scoped: isScoped });
 				}
 			} catch {
 				continue;
 			}
 		}
 	}
-	return null;
+
+	const scoped = matches.find((m) => m.scoped);
+	return scoped ?? matches[0] ?? null;
 }
 
 export function Overlay({ port = 3100 }: { port?: number }) {

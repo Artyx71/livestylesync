@@ -35,6 +35,42 @@ function camelToKebab(prop: string): string {
 	return prop.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
 
+function patchVue(filePath: string, selector: string, prop: string, value: string) {
+	const cssProp = camelToKebab(prop);
+	const src = readFileSync(filePath, "utf-8");
+
+	const styleMatch = /<style[^>]*scoped[^>]*>([\s\S]*?)<\/style>/m.exec(src);
+	if (!styleMatch) {
+		console.log("[LSS] no <style scoped> block found");
+		return;
+	}
+
+	const styleStart = styleMatch.index + styleMatch[0].indexOf(">") + 1;
+	const css = styleMatch[1];
+	const selRegex = selectorToRegex(selector);
+	const block = findBlock(css, selRegex);
+
+	if (!block) {
+		console.log("[LSS] selector not found in <style scoped>");
+		return;
+	}
+
+	const blockContent = css.slice(block.start + 1, block.end);
+	const propPattern = new RegExp(`${cssProp}\\s*:[^;]+;`);
+
+	let newBlockContent: string;
+	if (propPattern.test(blockContent)) {
+		newBlockContent = blockContent.replace(propPattern, `${cssProp}: ${value};`);
+	} else {
+		newBlockContent = blockContent.trimEnd() + `\n  ${cssProp}: ${value};\n`;
+	}
+
+	const newCss = css.slice(0, block.start + 1) + newBlockContent + css.slice(block.end);
+	const updated = src.slice(0, styleStart) + newCss + src.slice(styleStart + css.length);
+	writeFileSync(filePath, updated, "utf-8");
+	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath} (vue scoped)`);
+}
+
 function patchCss(filePath: string, selector: string, prop: string, value: string) {
 	const cssProp = camelToKebab(prop);
 	const css = readFileSync(filePath, "utf-8");
@@ -88,7 +124,11 @@ export function liveStyleSync(options: LiveStyleSyncOptions = {}): Plugin {
 				socket.on("message", (raw) => {
 					const msg = JSON.parse(raw.toString());
 					if (!msg.fileUrl || !msg.selector || !msg.prop || !msg.value) return;
-					patchCss(msg.fileUrl, msg.selector, msg.prop, msg.value);
+if (msg.fileUrl.endsWith(".vue")) {
+						patchVue(msg.fileUrl, msg.selector, msg.prop, msg.value);
+					} else {
+						patchCss(msg.fileUrl, msg.selector, msg.prop, msg.value);
+					}
 				});
 
 				socket.on("close", () => {
