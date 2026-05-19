@@ -9,7 +9,7 @@
   margin-bottom: 24px;
 
   &:hover {
-    border-color: red;
+    border-color: blue;
   }
   &:focus-visible {
     outline: 2px solid var(--accent);
@@ -65,7 +65,7 @@
   flex-grow: 1;
 
   @media (max-width: 1024px) {
-    padding: 250px;
+    padding: 255px;
     gap: 18px;
   }
 }

@@ -36,6 +36,16 @@ function App() {
         <p className="subtitle">Edit me via LiveStyleSync</p>
       </div>
 
+      <div className="bg-violet-900 rounded-xl p-6 text-white max-w-sm mx-auto mt-4">
+        <p className="text-lg font-bold mb-2">Tailwind Card</p>
+        <p className="text-sm text-violet-300">
+          Pick this element — LSS will warn you it's Tailwind
+        </p>
+        <button className="mt-4 bg-violet-500 hover:bg-violet-400 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          Tailwind button
+        </button>
+      </div>
+
       <div className="ticks"></div>
 
       <section id="next-steps">
