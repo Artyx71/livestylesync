@@ -137,7 +137,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 							{editor.totalPending > 0 && (
 								<button
-									onClick={editor.applyToFile}
+									onClick={() => editor.applyToFile(editor.groupStyles)}
 									style={{
 										width: "100%",
 										padding: "6px 0",
@@ -154,6 +154,26 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 									{hasSource
 										? `✓ Apply ${editor.totalPending} change${editor.totalPending > 1 ? "s" : ""} to file`
 										: "✗ No CSS source found"}
+								</button>
+							)}
+
+							{editor.canUndo && (
+								<button
+									onClick={editor.undo}
+									style={{
+										width: "100%",
+										padding: "4px 0",
+										marginTop: 4,
+										background: "transparent",
+										color: "#888",
+										border: "1px solid #333",
+										borderRadius: 6,
+										cursor: "pointer",
+										fontFamily: "monospace",
+										fontSize: 10,
+									}}
+								>
+									↩ Undo last apply
 								</button>
 							)}
 

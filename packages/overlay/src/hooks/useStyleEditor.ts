@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { findAllSourceStyles, groupKey } from "../css";
 import type { RuleGroup } from "../types";
 
+type UndoEntry = { fileUrl: string; selector: string; prop: string; oldValue: string; mediaQuery?: string }[];
+
 export function useStyleEditor(selected: Element | null, send: (data: object) => void) {
 	const [ruleGroups, setRuleGroups] = useState<RuleGroup[]>([]);
 	const [activeIdx, setActiveIdx] = useState(0);
@@ -10,6 +12,7 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 	const [newProp, setNewProp] = useState("");
 	const [newValue, setNewValue] = useState("");
 	const [serverError, setServerError] = useState<string | null>(null);
+	const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
 
 	useEffect(() => {
 		if (!selected) return;
@@ -21,6 +24,7 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		setNewProp("");
 		setNewValue("");
 		setServerError(null);
+		setUndoStack([]);
 	}, [selected]);
 
 	const activeGroup = ruleGroups[activeIdx] ?? null;
@@ -47,21 +51,30 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		setNewValue("");
 	};
 
-	const applyToFile = () => {
+	const applyToFile = (currentGroupStyles: Record<string, Record<string, string>>) => {
 		setServerError(null);
+
+		const undoEntry: UndoEntry = [];
+
 		Object.entries(allPending).forEach(([key, changes]) => {
 			const group = ruleGroups.find((g) => groupKey(g) === key);
 			if (!group) return;
 			Object.entries(changes).forEach(([prop, value]) => {
-				send({
+				undoEntry.push({
 					fileUrl: group.fileUrl,
 					selector: group.selector,
 					prop,
-					value,
+					oldValue: currentGroupStyles[key]?.[prop] ?? "",
 					mediaQuery: group.mediaQuery,
 				});
+				send({ fileUrl: group.fileUrl, selector: group.selector, prop, value, mediaQuery: group.mediaQuery });
 			});
 		});
+
+		if (undoEntry.length > 0) {
+			setUndoStack((prev) => [...prev, undoEntry]);
+		}
+
 		setGroupStyles((prev) => {
 			const next = { ...prev };
 			Object.entries(allPending).forEach(([key, changes]) => {
@@ -70,6 +83,27 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 			return next;
 		});
 		setAllPending({});
+	};
+
+	const undo = () => {
+		if (undoStack.length === 0) return;
+		const entry = undoStack[undoStack.length - 1];
+		setUndoStack((prev) => prev.slice(0, -1));
+		setServerError(null);
+
+		entry.forEach(({ fileUrl, selector, prop, oldValue, mediaQuery }) => {
+			send({ fileUrl, selector, prop, value: oldValue, mediaQuery });
+			(selected as HTMLElement)?.style.setProperty(prop, oldValue);
+		});
+
+		setGroupStyles((prev) => {
+			const next = { ...prev };
+			entry.forEach(({ selector, prop, oldValue, mediaQuery }) => {
+				const key = selector + (mediaQuery ?? "");
+				if (next[key]) next[key] = { ...next[key], [prop]: oldValue };
+			});
+			return next;
+		});
 	};
 
 	const totalPending = Object.values(allPending).reduce((sum, g) => sum + Object.keys(g).length, 0);
@@ -81,6 +115,7 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		activeGroup,
 		activeStyles,
 		activePending,
+		groupStyles,
 		newProp,
 		setNewProp,
 		newValue,
@@ -90,6 +125,8 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		handleChange,
 		handleAdd,
 		applyToFile,
+		undo,
+		canUndo: undoStack.length > 0,
 		totalPending,
 	};
 }
