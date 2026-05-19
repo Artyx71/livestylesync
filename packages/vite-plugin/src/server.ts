@@ -37,8 +37,8 @@ export function startWss(server: ViteDevServer, port: number) {
 					patchCss(fileUrl, selector, prop, value, mediaQuery);
 				}
 			} catch (err) {
+				console.error("[LSS] patch error:", err);
 				const message = err instanceof Error ? err.message : String(err);
-				console.error("[LSS] patch error:", message);
 				socket.send(JSON.stringify({ type: "error", message }));
 			}
 		});

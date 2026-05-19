@@ -115,6 +115,7 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		activeGroup,
 		activeStyles,
 		activePending,
+		allPending,
 		groupStyles,
 		newProp,
 		setNewProp,
