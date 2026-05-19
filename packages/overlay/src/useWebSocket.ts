@@ -1,19 +1,45 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const BACKOFF_MS = [1000, 2000, 4000, 8000, 16000, 30000];
+
+export type WsStatus = "connected" | "disconnected" | "reconnecting";
+
 export function useWebSocket(url: string) {
 	const ws = useRef<WebSocket | null>(null);
+	const attempt = useRef(0);
+	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const destroyed = useRef(false);
+	const [status, setStatus] = useState<WsStatus>("disconnected");
 
 	useEffect(() => {
-		ws.current = new WebSocket(url);
+		destroyed.current = false;
 
-		ws.current.onopen = () => {
-			console.log("[LSS] connected");
-		};
+		function connect() {
+			if (destroyed.current) return;
+			const socket = new WebSocket(url);
+			ws.current = socket;
 
-		ws.current.onclose = () => {
-			console.log("[LSS] disconnected");
-		};
+			socket.onopen = () => {
+				attempt.current = 0;
+				setStatus("connected");
+				console.log("[LSS] connected");
+			};
+
+			socket.onclose = () => {
+				if (destroyed.current) return;
+				const delay = BACKOFF_MS[Math.min(attempt.current, BACKOFF_MS.length - 1)];
+				attempt.current += 1;
+				setStatus("reconnecting");
+				console.log(`[LSS] disconnected — reconnecting in ${delay}ms (attempt ${attempt.current})`);
+				timer.current = setTimeout(connect, delay);
+			};
+		}
+
+		connect();
 
 		return () => {
+			destroyed.current = true;
+			if (timer.current) clearTimeout(timer.current);
 			ws.current?.close();
 		};
 	}, [url]);
@@ -23,5 +49,6 @@ export function useWebSocket(url: string) {
 			ws.current.send(JSON.stringify(data));
 		}
 	};
-	return { send };
+
+	return { send, status };
 }

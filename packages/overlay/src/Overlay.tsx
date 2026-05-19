@@ -218,7 +218,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const [newProp, setNewProp] = useState("");
 	const [newValue, setNewValue] = useState("");
 
-	const { send } = useWebSocket(`ws://localhost:${port}`);
+	const { send, status } = useWebSocket(`ws://localhost:${port}`);
 
 	const activeGroup = ruleGroups[activeIdx] ?? null;
 	const activeStyles = activeGroup ? (groupStyles[activeGroup.selector + (activeGroup.mediaQuery ?? "")] ?? {}) : {};
@@ -412,7 +412,19 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 			{open && (
 				<div ref={overlayRootRef} style={panel}>
-					<p style={{ margin: "0 0 10px", fontSize: 13 }}>LiveStyleSync</p>
+					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+						<span style={{ fontSize: 13 }}>LiveStyleSync</span>
+						<span
+							title={status}
+							style={{
+								width: 8,
+								height: 8,
+								borderRadius: "50%",
+								background: status === "connected" ? "#10b981" : status === "reconnecting" ? "#f59e0b" : "#ef4444",
+								flexShrink: 0,
+							}}
+						/>
+					</div>
 
 					<button
 						onClick={() => setPicking((v) => !v)}
