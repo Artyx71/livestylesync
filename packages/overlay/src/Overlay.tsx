@@ -217,8 +217,13 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 	const [newProp, setNewProp] = useState("");
 	const [newValue, setNewValue] = useState("");
+	const [serverError, setServerError] = useState<string | null>(null);
 
-	const { send, status } = useWebSocket(`ws://localhost:${port}`);
+	const { send, status } = useWebSocket(`ws://localhost:${port}`, (data) => {
+		if (data && typeof data === "object" && (data as Record<string, unknown>).type === "error") {
+			setServerError((data as Record<string, string>).message ?? "Unknown error");
+		}
+	});
 
 	const activeGroup = ruleGroups[activeIdx] ?? null;
 	const activeStyles = activeGroup ? (groupStyles[activeGroup.selector + (activeGroup.mediaQuery ?? "")] ?? {}) : {};
@@ -233,6 +238,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		setAllPending({});
 		setNewProp("");
 		setNewValue("");
+		setServerError(null);
 	}, [selected]);
 
 	const groupKey = (g: RuleGroup) => g.selector + (g.mediaQuery ?? "");
@@ -261,6 +267,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const hasSource = ruleGroups.length > 0;
 
 	const applyToFile = () => {
+		setServerError(null);
 		Object.entries(allPending).forEach(([key, changes]) => {
 			const group = ruleGroups.find((g) => groupKey(g) === key);
 			if (!group) return;
@@ -565,6 +572,11 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 										? `✓ Apply ${totalPending} change${totalPending > 1 ? "s" : ""} to file`
 										: "✗ No CSS source found"}
 								</button>
+							)}
+							{serverError && (
+								<p style={{ margin: "6px 0 0", fontSize: 10, color: "#f87171", wordBreak: "break-word" }}>
+									✗ {serverError}
+								</p>
 							)}
 						</>
 					)}

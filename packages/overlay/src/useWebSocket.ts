@@ -4,12 +4,15 @@ const BACKOFF_MS = [1000, 2000, 4000, 8000, 16000, 30000];
 
 export type WsStatus = "connected" | "disconnected" | "reconnecting";
 
-export function useWebSocket(url: string) {
+export function useWebSocket(url: string, onMessage?: (data: unknown) => void) {
 	const ws = useRef<WebSocket | null>(null);
 	const attempt = useRef(0);
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const destroyed = useRef(false);
+	const onMessageRef = useRef(onMessage);
 	const [status, setStatus] = useState<WsStatus>("disconnected");
+
+	useEffect(() => { onMessageRef.current = onMessage; });
 
 	useEffect(() => {
 		destroyed.current = false;
@@ -32,6 +35,13 @@ export function useWebSocket(url: string) {
 				setStatus("reconnecting");
 				console.log(`[LSS] disconnected — reconnecting in ${delay}ms (attempt ${attempt.current})`);
 				timer.current = setTimeout(connect, delay);
+			};
+
+			socket.onmessage = (event) => {
+				try {
+					const data = JSON.parse(event.data);
+					onMessageRef.current?.(data);
+				} catch { /* ignore malformed */ }
 			};
 		}
 

@@ -376,17 +376,28 @@ export function liveStyleSync(options: LiveStyleSyncOptions = {}): Plugin {
 				console.log("[LSS] client connected");
 
 				socket.on("message", (raw) => {
-					const msg = JSON.parse(raw.toString());
+					let msg: Record<string, string>;
+					try {
+						msg = JSON.parse(raw.toString());
+					} catch {
+						return;
+					}
 					if (!msg.fileUrl || !msg.selector || !msg.prop || !msg.value) return;
 
 					const { fileUrl, selector, prop, value, mediaQuery } = msg;
 
-					if (fileUrl.endsWith(".vue")) {
-						patchVue(fileUrl, selector, prop, value, mediaQuery);
-					} else if (fileUrl.endsWith(".scss")) {
-						patchScss(fileUrl, selector, prop, value, mediaQuery);
-					} else {
-						patchCss(fileUrl, selector, prop, value, mediaQuery);
+					try {
+						if (fileUrl.endsWith(".vue")) {
+							patchVue(fileUrl, selector, prop, value, mediaQuery);
+						} else if (fileUrl.endsWith(".scss")) {
+							patchScss(fileUrl, selector, prop, value, mediaQuery);
+						} else {
+							patchCss(fileUrl, selector, prop, value, mediaQuery);
+						}
+					} catch (err) {
+						const message = err instanceof Error ? err.message : String(err);
+						console.error("[LSS] patch error:", message);
+						socket.send(JSON.stringify({ type: "error", message }));
 					}
 				});
 
