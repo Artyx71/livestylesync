@@ -115,6 +115,12 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 								onSelect={editor.setActiveIdx}
 							/>
 
+							{editor.activeGroup?.isTailwind && (
+								<p style={{ margin: "6px 0", fontSize: 10, color: "#f59e0b", lineHeight: 1.4 }}>
+									⚠ Tailwind — changes won't persist. Edit classes in HTML instead.
+								</p>
+							)}
+
 							{editor.activeGroup && Object.keys(editor.activeStyles).length > 0 ? (
 								<StyleRows
 									styles={editor.activeStyles}

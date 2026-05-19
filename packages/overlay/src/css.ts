@@ -98,6 +98,16 @@ function collectRawRules(
 	return result;
 }
 
+export function isTailwindSheet(sheet: CSSStyleSheet): boolean {
+	try {
+		for (const rule of Array.from(sheet.cssRules)) {
+			if (rule instanceof CSSStyleRule && /\btw-/.test(rule.selectorText)) return true;
+			if (rule.cssText.includes("--tw-")) return true;
+		}
+	} catch { /* cross-origin */ }
+	return false;
+}
+
 export function findAllSourceStyles(el: Element): RuleGroup[] {
 	const groups: RuleGroup[] = [];
 	const seenKeys = new Set<string>();
@@ -118,6 +128,7 @@ export function findAllSourceStyles(el: Element): RuleGroup[] {
 			continue;
 		}
 
+		const sheetIsTailwind = isTailwindSheet(sheet);
 		const rawRules = collectRawRules(sheetRules);
 
 		for (const raw of rawRules) {
@@ -170,7 +181,7 @@ export function findAllSourceStyles(el: Element): RuleGroup[] {
 			if (Object.keys(styles).length === 0) continue;
 
 			const label = getPseudoLabel(selector);
-			const group: RuleGroup = { fileUrl: cleanUrl, selector, label, styles, mediaQuery };
+			const group: RuleGroup = { fileUrl: cleanUrl, selector, label, styles, mediaQuery, isTailwind: sheetIsTailwind || undefined };
 
 			if (isScoped) {
 				groups.unshift(group);

@@ -4,6 +4,7 @@ export interface RuleGroup {
 	label: string;
 	styles: Record<string, string>;
 	mediaQuery?: string;
+	isTailwind?: boolean;
 }
 
 export interface RawRule {
