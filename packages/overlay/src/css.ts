@@ -85,6 +85,14 @@ function collectRawRules(
 			collectRawRules(rule.cssRules, parentSelectors, rule.conditionText, result);
 		} else if (rule instanceof CSSSupportsRule) {
 			collectRawRules(rule.cssRules, parentSelectors, mediaQuery, result);
+		} else if ((rule as unknown as { cssRules?: CSSRuleList }).cssRules) {
+			// @layer, @container, and other container at-rules
+			collectRawRules(
+				(rule as unknown as { cssRules: CSSRuleList }).cssRules,
+				parentSelectors,
+				mediaQuery,
+				result,
+			);
 		} else if ("style" in rule) {
 			// CSSNestedDeclarations (Chrome 130+) — no selectorText, inherits parent
 			result.push({
@@ -98,11 +106,16 @@ function collectRawRules(
 	return result;
 }
 
+// Tailwind v3: uses --tw- variables; v4: emits @layer theme/base/utilities blocks
+const TAILWIND_LAYERS = new Set(["theme", "base", "utilities", "components"]);
+
 export function isTailwindSheet(sheet: CSSStyleSheet): boolean {
 	try {
 		for (const rule of Array.from(sheet.cssRules)) {
-			if (rule instanceof CSSStyleRule && /\btw-/.test(rule.selectorText)) return true;
 			if (rule.cssText.includes("--tw-")) return true;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const name = (rule as any).name;
+			if (typeof name === "string" && TAILWIND_LAYERS.has(name)) return true;
 		}
 	} catch { /* cross-origin */ }
 	return false;
