@@ -262,56 +262,94 @@ function patchVue(filePath: string, selector: string, prop: string, value: strin
 
 function patchCss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string) {
 	const cssProp = camelToKebab(prop);
-	const css = readFileSync(filePath, "utf-8");
-	const selRegex = selectorToRegex(selector);
+	const src = readFileSync(filePath, "utf-8");
+	const root = postcss.parse(src);
+	const normalizedSelector = selector.replace(/\s+/g, " ").trim();
+	const normalizedMedia = mediaQuery?.replace(/\s+/g, " ").trim();
 
-	if (!mediaQuery) {
-		const block = findBlock(css, selRegex);
-		if (!block) {
-			console.log("[LSS] selector not found, skipping");
-			return;
+	let found = false;
+
+	// Handle: rule at top level OR rule inside @media { rule { } }
+	root.walkRules((rule) => {
+		if (found) return false;
+		if (rule.selector.replace(/\s+/g, " ").trim() !== normalizedSelector) return;
+
+		if (normalizedMedia) {
+			// Rule must be inside the right @media
+			let inTargetMedia = false;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			let p: any = rule.parent;
+			while (p) {
+				if (p.type === "atrule" && p.name === "media") {
+					if (p.params.replace(/\s+/g, " ").trim() === normalizedMedia) {
+						inTargetMedia = true;
+						break;
+					}
+				}
+				p = p.parent;
+			}
+			if (!inTargetMedia) return;
+		} else {
+			// No media: rule must NOT be inside any @media
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			let p: any = rule.parent;
+			while (p) {
+				if (p.type === "atrule" && p.name === "media") return;
+				p = p.parent;
+			}
 		}
-		const content = css.slice(block.start + 1, block.end);
-		const patched = patchBlockContent(content, cssProp, value, "  ");
-		const updated = css.slice(0, block.start + 1) + patched + css.slice(block.end);
-		writeFileSync(filePath, updated, "utf-8");
-		console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath}`);
+
+		let propFound = false;
+		rule.walkDecls(cssProp, (decl) => {
+			decl.value = value;
+			propFound = true;
+		});
+		if (!propFound) {
+			rule.append(new postcss.Declaration({ prop: cssProp, value }));
+		}
+		found = true;
+	});
+
+	// CSS nesting format: selector { @media { declarations directly, no inner rule } }
+	if (!found && normalizedMedia) {
+		root.walkRules((rule) => {
+			if (found) return false;
+			if (rule.selector.replace(/\s+/g, " ").trim() !== normalizedSelector) return;
+
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			let p: any = rule.parent;
+			while (p) {
+				if (p.type === "atrule" && p.name === "media") return;
+				p = p.parent;
+			}
+
+			rule.each((child) => {
+				if (found) return false;
+				if (child.type !== "atrule") return;
+				const atRule = child as postcss.AtRule;
+				if (atRule.name !== "media") return;
+				if (atRule.params.replace(/\s+/g, " ").trim() !== normalizedMedia) return;
+
+				let propFound = false;
+				atRule.walkDecls(cssProp, (decl) => {
+					decl.value = value;
+					propFound = true;
+				});
+				if (!propFound) {
+					atRule.append(new postcss.Declaration({ prop: cssProp, value }));
+				}
+				found = true;
+			});
+		});
+	}
+
+	if (!found) {
+		console.log("[LSS] selector not found in CSS, skipping");
 		return;
 	}
 
-	// Try: @media { selector { } }
-	const mediaBlock = findMediaBlock(css, mediaQuery);
-	if (mediaBlock) {
-		const inner = css.slice(mediaBlock.start + 1, mediaBlock.end);
-		const block = findBlock(inner, selRegex);
-		if (block) {
-			const content = inner.slice(block.start + 1, block.end);
-			const patched = patchBlockContent(content, cssProp, value, "    ");
-			const newInner = inner.slice(0, block.start + 1) + patched + inner.slice(block.end);
-			const updated = css.slice(0, mediaBlock.start + 1) + newInner + css.slice(mediaBlock.end);
-			writeFileSync(filePath, updated, "utf-8");
-			console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath} (@media ${mediaQuery})`);
-			return;
-		}
-	}
-
-	// Try: selector { @media { } } (CSS nesting format)
-	const outerBlock = findBlock(css, selRegex);
-	if (outerBlock) {
-		const inner = css.slice(outerBlock.start + 1, outerBlock.end);
-		const innerMedia = findMediaBlock(inner, mediaQuery);
-		if (innerMedia) {
-			const content = inner.slice(innerMedia.start + 1, innerMedia.end);
-			const patched = patchBlockContent(content, cssProp, value, "    ");
-			const newInner = inner.slice(0, innerMedia.start + 1) + patched + inner.slice(innerMedia.end);
-			const updated = css.slice(0, outerBlock.start + 1) + newInner + css.slice(outerBlock.end);
-			writeFileSync(filePath, updated, "utf-8");
-			console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath} (css-nested @media ${mediaQuery})`);
-			return;
-		}
-	}
-
-	console.log("[LSS] @media block not found, skipping");
+	writeFileSync(filePath, root.toString(), "utf-8");
+	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath}`);
 }
 
 interface LiveStyleSyncOptions {
