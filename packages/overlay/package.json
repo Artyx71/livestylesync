@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync-overlay",
-	"version": "0.1.8",
+	"version": "0.2.0",
 	"description": "Browser overlay for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
@@ -12,7 +12,10 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
-	"files": ["dist", "README.md"],
+	"files": [
+		"dist",
+		"README.md"
+	],
 	"scripts": {
 		"build": "tsup"
 	},
