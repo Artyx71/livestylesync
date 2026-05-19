@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync-overlay",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "Browser overlay for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
