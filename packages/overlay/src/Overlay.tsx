@@ -6,6 +6,7 @@ import { BreadcrumbNav } from "./components/BreadcrumbNav";
 import { GroupTabs } from "./components/GroupTabs";
 import { StyleRows } from "./components/StyleRows";
 import { AddPropertyRow } from "./components/AddPropertyRow";
+import { useCreateRule } from "./hooks/useCreateRule";
 
 const panel: React.CSSProperties = {
 	position: "fixed",
@@ -31,11 +32,17 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
 
 	const { send, status } = useWebSocket(`ws://localhost:${port}`, (data) => {
-		if (data && typeof data === "object" && (data as Record<string, unknown>).type === "error") {
-			editor.setServerError((data as Record<string, string>).message ?? "Unknown error");
+		if (!data || typeof data !== "object") return;
+		const msg = data as Record<string, unknown>;
+		if (msg.type === "error") {
+			editor.setServerError((msg as Record<string, string>).message ?? "Unknown error");
+		}
+		if (msg.type === "files") {
+			cr.handleFiles(msg.files as string[]);
 		}
 	});
 
+	const cr = useCreateRule(selected, send, () => {});
 	const editor = useStyleEditor(selected, send);
 
 	const hasSource = editor.ruleGroups.length > 0;
@@ -121,16 +128,103 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 								</p>
 							)}
 
-							{editor.activeGroup && Object.keys(editor.activeStyles).length > 0 ? (
+							{editor.activeGroup && Object.keys(editor.activeStyles).length > 0 && (
 								<StyleRows
 									styles={editor.activeStyles}
 									pending={editor.activePending}
 									onChange={editor.handleChange}
 								/>
-							) : (
-								<p style={{ color: "#555", fontSize: 11, margin: "8px 0" }}>
-									{editor.activeGroup ? "No properties" : "No CSS source found"}
-								</p>
+							)}
+							{editor.activeGroup && Object.keys(editor.activeStyles).length === 0 && (
+								<p style={{ color: "#555", fontSize: 11, margin: "8px 0" }}>No properties</p>
+							)}
+							{!hasSource && (
+								<div style={{ marginTop: 8 }}>
+									<p style={{ color: "#555", fontSize: 11, margin: "0 0 8px" }}>No CSS source found</p>
+									{cr.files.length === 0 ? (
+										<button
+											onClick={cr.requestFiles}
+											disabled={cr.loadingFiles}
+											style={{
+												width: "100%", padding: "6px 0",
+												background: "#2d2d4e",
+												color: cr.loadingFiles ? "#555" : "#a78bfa",
+												border: "1px solid #555", borderRadius: 6,
+												cursor: cr.loadingFiles ? "default" : "pointer",
+												fontFamily: "monospace", fontSize: 11,
+											}}
+										>
+											{cr.loadingFiles ? "Loading files…" : "+ Create new rule"}
+										</button>
+									) : (
+										<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+											<select
+												value={cr.chosenFile}
+												onChange={(e) => cr.setChosenFile(e.target.value)}
+												style={{
+													width: "100%", background: "#2d2d4e", color: "#fff",
+													border: "1px solid #555", borderRadius: 4,
+													padding: "4px 6px", fontFamily: "monospace", fontSize: 11,
+												}}
+											>
+												{cr.files.map((f) => (
+													<option key={f} value={f}>{f.split("/").pop()}</option>
+												))}
+											</select>
+											<div style={{ color: "#888", fontSize: 10 }}>
+												Selector: <code style={{ color: "#a78bfa" }}>{cr.selector}</code>
+											</div>
+											<input
+												placeholder="property (e.g. color)"
+												value={cr.prop}
+												onChange={(e) => cr.setProp(e.target.value)}
+												style={{
+													background: "#2d2d4e", color: "#fff",
+													border: "1px solid #555", borderRadius: 4,
+													padding: "4px 6px", fontFamily: "monospace", fontSize: 11,
+												}}
+											/>
+											<input
+												placeholder="value (e.g. red)"
+												value={cr.value}
+												onChange={(e) => cr.setValue(e.target.value)}
+												style={{
+													background: "#2d2d4e", color: "#fff",
+													border: "1px solid #555", borderRadius: 4,
+													padding: "4px 6px", fontFamily: "monospace", fontSize: 11,
+												}}
+											/>
+											<div style={{ display: "flex", gap: 4 }}>
+												<button
+													onClick={cr.create}
+													disabled={!cr.prop.trim() || !cr.value.trim()}
+													style={{
+														flex: 1, padding: "6px 0",
+														background: cr.prop.trim() && cr.value.trim() ? "#065f46" : "#2d2d4e",
+														color: cr.prop.trim() && cr.value.trim() ? "#6ee7b7" : "#555",
+														border: "1px solid " + (cr.prop.trim() && cr.value.trim() ? "#059669" : "#444"),
+														borderRadius: 6,
+														cursor: cr.prop.trim() && cr.value.trim() ? "pointer" : "not-allowed",
+														fontFamily: "monospace", fontSize: 11,
+													}}
+												>
+													Create
+												</button>
+												<button
+													onClick={cr.reset}
+													style={{
+														padding: "6px 10px", background: "transparent",
+														color: "#888", border: "1px solid #333",
+														borderRadius: 6, cursor: "pointer",
+														fontFamily: "monospace", fontSize: 11,
+													}}
+												>
+													✕
+												</button>
+											</div>
+										</div>
+									)}
+								</div>
 							)}
 
 							<AddPropertyRow

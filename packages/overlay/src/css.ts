@@ -148,7 +148,10 @@ export function findAllSourceStyles(el: Element): RuleGroup[] {
 			const effectiveRaw = resolveRawSelector(raw.selectorText, raw.parentSelectors);
 			const { mediaQuery } = raw;
 
-			if (!effectiveRaw || effectiveRaw === "*" || effectiveRaw === "&") continue;
+			if (!effectiveRaw || effectiveRaw === "&") continue;
+			// Skip selectors where any comma-part is the universal selector — matches every element
+			const selParts = effectiveRaw.split(",").map((s) => s.trim());
+			if (selParts.some((p) => p === "*" || p.startsWith("*:") || p.startsWith("* "))) continue;
 
 			const stripped = stripInteractivePseudos(effectiveRaw);
 			const isPseudo = stripped !== effectiveRaw;
