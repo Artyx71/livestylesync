@@ -8,9 +8,11 @@ import { StyleRows } from "./components/StyleRows";
 import { AddPropertyRow } from "./components/AddPropertyRow";
 import { useCreateRule } from "./hooks/useCreateRule";
 import { useDraggable } from "./hooks/useDraggable";
+import { useRootVars } from "./hooks/useRootVars";
 
 export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
+	const [varsOpen, setVarsOpen] = useState(false);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
@@ -29,6 +31,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 	const cr = useCreateRule(selected, send, () => {});
 	const editor = useStyleEditor(selected, send);
+	const rootVars = useRootVars(send);
 
 	const hasSource = editor.ruleGroups.length > 0;
 
@@ -120,6 +123,109 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					>
 						{picking ? "⊙ Кликни на элемент..." : "↖ Выбрать элемент"}
 					</button>
+
+					<button
+						onClick={() => {
+							const next = !varsOpen;
+							setVarsOpen(next);
+							if (next) rootVars.load();
+						}}
+						style={{
+							width: "100%",
+							padding: "6px 0",
+							marginTop: 6,
+							background: varsOpen ? "#1e1b4b" : "#2d2d4e",
+							color: varsOpen ? "#a78bfa" : "#888",
+							border: "1px solid " + (varsOpen ? "#4f46e5" : "#444"),
+							borderRadius: 6,
+							cursor: "pointer",
+							fontFamily: "monospace",
+							fontSize: 11,
+						}}
+					>
+						{varsOpen ? "▾ CSS Variables" : "▸ CSS Variables"}
+					</button>
+
+					{varsOpen && (
+						<div style={{ marginTop: 8 }}>
+							{rootVars.vars.length === 0 ? (
+								<p style={{ color: "#555", fontSize: 11, margin: 0 }}>No :root variables found</p>
+							) : (
+								<>
+									{rootVars.vars.map((v) => {
+										const current = rootVars.pending[v.name] ?? v.value;
+										const changed = v.name in rootVars.pending;
+										return (
+											<div key={v.name} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
+												<span
+													title={v.name}
+													style={{
+														flex: 1,
+														color: changed ? "#a78bfa" : "#888",
+														fontSize: 10,
+														overflow: "hidden",
+														textOverflow: "ellipsis",
+														whiteSpace: "nowrap",
+													}}
+												>
+													{v.name}
+												</span>
+												<input
+													value={current}
+													onChange={(e) => rootVars.handleChange(v.name, e.target.value)}
+													style={{
+														width: 100,
+														background: changed ? "#1e1b4b" : "#2d2d4e",
+														color: "#fff",
+														border: "1px solid " + (changed ? "#4f46e5" : "#444"),
+														borderRadius: 3,
+														padding: "2px 4px",
+														fontFamily: "monospace",
+														fontSize: 10,
+													}}
+												/>
+											</div>
+										);
+									})}
+									{rootVars.hasPending && (
+										<div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+											<button
+												onClick={rootVars.apply}
+												style={{
+													flex: 1,
+													padding: "4px 0",
+													background: "#065f46",
+													color: "#6ee7b7",
+													border: "1px solid #059669",
+													borderRadius: 4,
+													cursor: "pointer",
+													fontFamily: "monospace",
+													fontSize: 10,
+												}}
+											>
+												Apply
+											</button>
+											<button
+												onClick={rootVars.reset}
+												style={{
+													padding: "4px 8px",
+													background: "transparent",
+													color: "#888",
+													border: "1px solid #333",
+													borderRadius: 4,
+													cursor: "pointer",
+													fontFamily: "monospace",
+													fontSize: 10,
+												}}
+											>
+												✕
+											</button>
+										</div>
+									)}
+								</>
+							)}
+						</div>
+					)}
 
 					{selected && (
 						<>

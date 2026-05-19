@@ -7,6 +7,13 @@ export interface RuleGroup {
 	isTailwind?: boolean;
 }
 
+export interface RootVar {
+	name: string;
+	value: string;
+	fileUrl: string;
+	selector: string;
+}
+
 export interface RawRule {
 	selectorText: string;
 	parentSelectors: string[];

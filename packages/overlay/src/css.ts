@@ -1,4 +1,4 @@
-import type { RawRule, RuleGroup } from "./types";
+import type { RawRule, RootVar, RuleGroup } from "./types";
 
 const INTERACTIVE_PSEUDOS = [
 	":hover", ":focus", ":focus-visible", ":focus-within",
@@ -214,4 +214,42 @@ export function findAllSourceStyles(el: Element): RuleGroup[] {
 	);
 	const rest = groups.filter((g) => g.label !== "base" || g.mediaQuery);
 	return bestBase ? [bestBase, ...rest] : rest;
+}
+
+function collectRootVars(rules: CSSRuleList, fileUrl: string, vars: RootVar[], seen: Set<string>): void {
+	for (const rule of Array.from(rules)) {
+		if (rule instanceof CSSStyleRule) {
+			if (rule.selectorText === ":root" || rule.selectorText === "html") {
+				for (const prop of Array.from(rule.style)) {
+					if (!prop.startsWith("--")) continue;
+					const key = `${prop}|||${fileUrl}`;
+					if (seen.has(key)) continue;
+					seen.add(key);
+					vars.push({ name: prop, value: rule.style.getPropertyValue(prop).trim(), fileUrl, selector: rule.selectorText });
+				}
+			}
+		} else if (!(rule instanceof CSSMediaRule) && (rule as unknown as { cssRules?: CSSRuleList }).cssRules) {
+			// recurse into @layer, @supports, @container — but NOT @media (skip dark-mode overrides)
+			collectRootVars((rule as unknown as { cssRules: CSSRuleList }).cssRules, fileUrl, vars, seen);
+		}
+	}
+}
+
+export function findRootVars(): RootVar[] {
+	const vars: RootVar[] = [];
+	const seen = new Set<string>();
+
+	for (const sheet of Array.from(document.styleSheets)) {
+		let fileUrl: string | null = sheet.href;
+		if (!fileUrl && sheet.ownerNode instanceof HTMLElement) {
+			fileUrl = sheet.ownerNode.getAttribute("data-vite-dev-id");
+		}
+		if (!fileUrl) continue;
+
+		let rules: CSSRuleList;
+		try { rules = sheet.cssRules; } catch { continue; }
+
+		collectRootVars(rules, fileUrl.split("?")[0], vars, seen);
+	}
+	return vars;
 }
