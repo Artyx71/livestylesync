@@ -46,6 +46,13 @@ function App() {
         </button>
       </div>
 
+      <div style={{ textAlign: "center", margin: "32px auto", maxWidth: 320 }}>
+        <p style={{ color: "#888", fontSize: 13, marginBottom: 12 }}>↓ No CSS source — pick to test rule creation</p>
+        <div data-testid="no-source-block">
+          <span>Plain unstyled block</span>
+        </div>
+      </div>
+
       <div className="ticks"></div>
 
       <section id="next-steps">

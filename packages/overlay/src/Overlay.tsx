@@ -7,29 +7,14 @@ import { GroupTabs } from "./components/GroupTabs";
 import { StyleRows } from "./components/StyleRows";
 import { AddPropertyRow } from "./components/AddPropertyRow";
 import { useCreateRule } from "./hooks/useCreateRule";
-
-const panel: React.CSSProperties = {
-	position: "fixed",
-	bottom: 44,
-	right: 20,
-	width: 300,
-	maxHeight: "70vh",
-	overflowY: "auto",
-	background: "#1a1a2e",
-	border: "1px solid #7C3AED",
-	borderRadius: 8,
-	padding: 16,
-	zIndex: 9999,
-	color: "#fff",
-	fontFamily: "monospace",
-	fontSize: 12,
-};
+import { useDraggable } from "./hooks/useDraggable";
 
 export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
+	const { pos, onMouseDown: onDragStart } = useDraggable({ x: window.innerWidth - 320, y: window.innerHeight - 500 });
 
 	const { send, status } = useWebSocket(`ws://localhost:${port}`, (data) => {
 		if (!data || typeof data !== "object") return;
@@ -79,8 +64,33 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 			/>
 
 			{open && (
-				<div ref={overlayRootRef} style={panel}>
-					<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+				<div ref={overlayRootRef} style={{
+					position: "fixed",
+					left: pos.x,
+					top: pos.y,
+					width: 300,
+					maxHeight: "70vh",
+					overflowY: "auto",
+					background: "#1a1a2e",
+					border: "1px solid #7C3AED",
+					borderRadius: 8,
+					padding: 16,
+					zIndex: 9999,
+					color: "#fff",
+					fontFamily: "monospace",
+					fontSize: 12,
+				}}>
+					<div
+						onMouseDown={onDragStart}
+						style={{
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							marginBottom: 10,
+							cursor: "grab",
+							userSelect: "none",
+						}}
+					>
 						<span style={{ fontSize: 13 }}>LiveStyleSync</span>
 						<span
 							title={status}
