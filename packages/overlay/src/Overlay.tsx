@@ -62,37 +62,52 @@ interface RuleGroup {
 	mediaQuery?: string;
 }
 
-function* iterateStyleRules(
+interface RawRule {
+	selectorText: string;
+	parentSelectors: string[];
+	mediaQuery?: string;
+	style: CSSStyleDeclaration;
+}
+
+function resolveRawSelector(sel: string, parentSelectors: string[]): string {
+	if (!sel.includes("&")) return sel;
+	const parent = parentSelectors[parentSelectors.length - 1] ?? "";
+	return sel.replace(/&/g, parent).trim();
+}
+
+function collectRawRules(
 	rules: CSSRuleList,
+	parentSelectors: string[] = [],
 	mediaQuery?: string,
-	parentSel?: string,
-): Generator<{ rule: CSSStyleRule; mediaQuery?: string; parentSel?: string }> {
+	result: RawRule[] = [],
+): RawRule[] {
 	for (const rule of Array.from(rules)) {
 		if (rule instanceof CSSStyleRule) {
-			yield { rule, mediaQuery, parentSel };
-			const mySel = rule.selectorText.includes("&") && parentSel
-				? rule.selectorText.replace(/&/g, parentSel).trim()
-				: rule.selectorText;
+			result.push({ selectorText: rule.selectorText, parentSelectors, mediaQuery, style: rule.style });
+			const mySel = resolveRawSelector(rule.selectorText, parentSelectors);
 			if ((rule as unknown as { cssRules?: CSSRuleList }).cssRules?.length) {
-				yield* iterateStyleRules(
+				collectRawRules(
 					(rule as unknown as { cssRules: CSSRuleList }).cssRules,
+					[...parentSelectors, mySel],
 					mediaQuery,
-					mySel,
+					result,
 				);
 			}
 		} else if (rule instanceof CSSMediaRule) {
-			yield* iterateStyleRules(rule.cssRules, rule.conditionText, parentSel);
+			collectRawRules(rule.cssRules, parentSelectors, rule.conditionText, result);
 		} else if (rule instanceof CSSSupportsRule) {
-			yield* iterateStyleRules(rule.cssRules, mediaQuery, parentSel);
+			collectRawRules(rule.cssRules, parentSelectors, mediaQuery, result);
 		} else if ("style" in rule) {
-			// CSSNestedDeclarations (Chrome 130+): declarations inside @media without a selector
-			const synth = {
-				selectorText: parentSel ?? "&",
+			// CSSNestedDeclarations (Chrome 130+) — no selectorText, inherits parent
+			result.push({
+				selectorText: "&",
+				parentSelectors,
+				mediaQuery,
 				style: (rule as unknown as { style: CSSStyleDeclaration }).style,
-			} as unknown as CSSStyleRule;
-			yield { rule: synth, mediaQuery, parentSel };
+			});
 		}
 	}
+	return result;
 }
 
 function findAllSourceStyles(el: Element): RuleGroup[] {
@@ -108,27 +123,22 @@ function findAllSourceStyles(el: Element): RuleGroup[] {
 
 		if (!fileUrl) continue;
 
-		let rules: CSSRuleList;
+		let sheetRules: CSSRuleList;
 		try {
-			rules = sheet.cssRules;
+			sheetRules = sheet.cssRules;
 		} catch {
 			continue;
 		}
 
-		// Track selectors matched in this sheet to resolve "&" nesting selector
-		const matchedInSheet: string[] = [];
+		// Pass 1: collect all rules with full parent selector context
+		const rawRules = collectRawRules(sheetRules);
 
-		for (const { rule, mediaQuery, parentSel } of iterateStyleRules(rules)) {
-			const raw = rule.selectorText;
+		// Pass 2: match each rule against the element
+		for (const raw of rawRules) {
+			const effectiveRaw = resolveRawSelector(raw.selectorText, raw.parentSelectors);
+			const { mediaQuery } = raw;
 
-			// Resolve CSS nesting "&" using parent context or last matched selector
-			let effectiveRaw = raw;
-			if (raw.includes("&")) {
-				const resolveWith = parentSel ?? matchedInSheet[matchedInSheet.length - 1];
-				if (resolveWith) effectiveRaw = raw.replace(/&/g, resolveWith).trim();
-			}
-
-			if (effectiveRaw === "*") continue;
+			if (!effectiveRaw || effectiveRaw === "*" || effectiveRaw === "&") continue;
 
 			const stripped = stripInteractivePseudos(effectiveRaw);
 			const isPseudo = stripped !== effectiveRaw;
@@ -141,7 +151,6 @@ function findAllSourceStyles(el: Element): RuleGroup[] {
 			}
 
 			if (!matches) continue;
-			matchedInSheet.push(effectiveRaw);
 
 			const seenKey = `${effectiveRaw}|||${mediaQuery ?? ""}`;
 			if (seenKeys.has(seenKey)) continue;
@@ -165,7 +174,7 @@ function findAllSourceStyles(el: Element): RuleGroup[] {
 			const cleanUrl = isVue ? fileUrl.split("?")[0] : fileUrl;
 
 			const styles: Record<string, string> = {};
-			for (const decl of rule.style.cssText.split(";")) {
+			for (const decl of raw.style.cssText.split(";")) {
 				const colon = decl.indexOf(":");
 				if (colon === -1) continue;
 				const prop = decl.slice(0, colon).trim();
