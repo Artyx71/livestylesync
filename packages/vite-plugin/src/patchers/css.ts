@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import postcss from "postcss";
 import { camelToKebab } from "./utils";
 
-export function patchCss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string) {
+export function patchCss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): boolean {
 	const cssProp = camelToKebab(prop);
 	const src = readFileSync(filePath, "utf-8");
 	const root = postcss.parse(src);
@@ -88,9 +88,10 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 
 	if (!found) {
 		console.log("[LSS] selector not found in CSS, skipping");
-		return;
+		return false;
 	}
 
 	writeFileSync(filePath, root.toString(), "utf-8");
 	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath}`);
+	return true;
 }

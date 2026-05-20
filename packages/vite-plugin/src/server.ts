@@ -75,12 +75,16 @@ export function startWss(server: ViteDevServer, port: number) {
 			const { fileUrl, selector, prop, value, mediaQuery } = msg;
 
 			try {
+				let patched: boolean;
 				if (fileUrl.endsWith(".vue")) {
-					patchVue(fileUrl, selector, prop, value, mediaQuery);
+					patched = patchVue(fileUrl, selector, prop, value, mediaQuery);
 				} else if (fileUrl.endsWith(".scss")) {
-					patchScss(fileUrl, selector, prop, value, mediaQuery);
+					patched = patchScss(fileUrl, selector, prop, value, mediaQuery);
 				} else {
-					patchCss(fileUrl, selector, prop, value, mediaQuery);
+					patched = patchCss(fileUrl, selector, prop, value, mediaQuery);
+				}
+				if (!patched) {
+					socket.send(JSON.stringify({ type: "error", message: `Selector "${selector}" not found in source file` }));
 				}
 			} catch (err) {
 				console.error("[LSS] patch error:", err);

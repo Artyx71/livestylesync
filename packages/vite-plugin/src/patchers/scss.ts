@@ -29,7 +29,7 @@ function resolveRuleSelector(rule: postcss.Rule): string {
 	return selectors.join(", ");
 }
 
-export function patchScss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string) {
+export function patchScss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): boolean {
 	const cssProp = camelToKebab(prop);
 	const src = readFileSync(filePath, "utf-8");
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,11 +117,12 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 
 	if (!found) {
 		console.log("[LSS] selector not found in SCSS");
-		return;
+		return false;
 	}
 
 	let output = "";
 	scssParser.stringify(root, (str: string) => { output += str; });
 	writeFileSync(filePath, output, "utf-8");
 	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath} (scss)`);
+	return true;
 }
