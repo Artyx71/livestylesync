@@ -21,11 +21,14 @@ export function getPseudoLabel(selector: string): string {
 }
 
 export function shortMedia(mq: string): string {
-	const maxW = /max-width:\s*(\d+\w*)/.exec(mq);
-	const minW = /min-width:\s*(\d+\w*)/.exec(mq);
-	if (maxW) return `≤${maxW[1]}`;
-	if (minW) return `≥${minW[1]}`;
-	return "@media";
+	const isContainer = mq.startsWith("@container");
+	const inner = isContainer ? mq.slice("@container".length).trim() : mq;
+	const prefix = isContainer ? "@c " : "";
+	const maxW = /max-width:\s*(\d+\w*)/.exec(inner);
+	const minW = /min-width:\s*(\d+\w*)/.exec(inner);
+	if (maxW) return `${prefix}≤${maxW[1]}`;
+	if (minW) return `${prefix}≥${minW[1]}`;
+	return isContainer ? "@container" : "@media";
 }
 
 export function groupTabLabel(g: RuleGroup): string {
@@ -85,8 +88,17 @@ function collectRawRules(
 			collectRawRules(rule.cssRules, parentSelectors, rule.conditionText, result);
 		} else if (rule instanceof CSSSupportsRule) {
 			collectRawRules(rule.cssRules, parentSelectors, mediaQuery, result);
+		} else if (
+			!(rule instanceof CSSMediaRule) &&
+			!(rule instanceof CSSSupportsRule) &&
+			(rule as unknown as { conditionText?: string }).conditionText !== undefined &&
+			(rule as unknown as { cssRules?: CSSRuleList }).cssRules
+		) {
+			// @container — has conditionText but is not @media or @supports
+			const cr = rule as unknown as { conditionText: string; cssRules: CSSRuleList };
+			collectRawRules(cr.cssRules, parentSelectors, `@container ${cr.conditionText}`, result);
 		} else if ((rule as unknown as { cssRules?: CSSRuleList }).cssRules) {
-			// @layer, @container, and other container at-rules
+			// @layer and other container at-rules
 			collectRawRules(
 				(rule as unknown as { cssRules: CSSRuleList }).cssRules,
 				parentSelectors,

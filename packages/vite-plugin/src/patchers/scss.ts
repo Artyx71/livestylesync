@@ -40,6 +40,10 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 
 	let found = false;
 
+	const isContainer = normalizedMedia?.startsWith("@container") ?? false;
+	const atRuleName = isContainer ? "container" : "media";
+	const atRuleParams = isContainer ? normalizedMedia!.slice("@container".length).trim() : normalizedMedia;
+
 	root.walkRules((rule) => {
 		if (found) return false;
 		const resolved = resolveRuleSelector(rule).replace(/\s+/g, " ").trim();
@@ -50,9 +54,9 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let p: any = rule.parent;
 			while (p) {
-				if (p.type === "atrule" && p.name === "media") {
+				if (p.type === "atrule" && p.name === atRuleName) {
 					const params: string = p.params.replace(/\s+/g, " ").trim();
-					if (params === normalizedMedia) { inTargetMedia = true; break; }
+					if (params === atRuleParams) { inTargetMedia = true; break; }
 				}
 				p = p.parent;
 			}
@@ -61,7 +65,7 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let p: any = rule.parent;
 			while (p) {
-				if (p.type === "atrule" && p.name === "media") return;
+				if (p.type === "atrule" && (p.name === "media" || p.name === "container")) return;
 				p = p.parent;
 			}
 		}
@@ -87,7 +91,7 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let p: any = rule.parent;
 			while (p) {
-				if (p.type === "atrule" && p.name === "media") return;
+				if (p.type === "atrule" && (p.name === "media" || p.name === "container")) return;
 				p = p.parent;
 			}
 
@@ -95,8 +99,8 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 				if (found) return false;
 				if (child.type !== "atrule") return;
 				const atRule = child as postcss.AtRule;
-				if (atRule.name !== "media") return;
-				if (atRule.params.replace(/\s+/g, " ").trim() !== normalizedMedia) return;
+				if (atRule.name !== atRuleName) return;
+				if (atRule.params.replace(/\s+/g, " ").trim() !== atRuleParams) return;
 
 				let propFound = false;
 				atRule.walkDecls(cssProp, (decl) => {

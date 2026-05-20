@@ -1,3 +1,26 @@
+.container-demo {
+  container-type: inline-size;
+  margin: 24px auto;
+  max-width: 400px;
+  border: 1px dashed #444;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.container-inner {
+  padding: 12px 16px;
+  color: #888;
+  font-size: 13px;
+}
+
+@container (min-width: 300px) {
+  .container-inner {
+    color: #a78bfa;
+    font-size: 15px;
+    font-weight: bold;
+  }
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -62,11 +85,11 @@
   gap: 25px;
   place-content: center;
   place-items: center;
-  flex-grow: 1;
+  flex-grow: 152;
 
   @media (max-width: 1024px) {
     padding: 255px;
-    gap: 18px;
+    gap: 25px;
   }
 }
 

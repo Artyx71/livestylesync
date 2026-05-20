@@ -46,6 +46,10 @@ function App() {
         </button>
       </div>
 
+      <div className="container-demo">
+        <div className="container-inner">@container demo — pick me to edit container-query styles</div>
+      </div>
+
       <div style={{ textAlign: "center", margin: "32px auto", maxWidth: 320 }}>
         <p style={{ color: "#888", fontSize: 13, marginBottom: 12 }}>↓ No CSS source — pick to test rule creation</p>
         <div data-testid="no-source-block">
