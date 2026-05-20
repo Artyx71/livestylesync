@@ -32,6 +32,7 @@ export function useCreateRule(
 
 	const create = () => {
 		if (!chosenFile || !prop.trim() || !value.trim()) return;
+		try { document.querySelector(selector); } catch { return; }
 		send({ type: "create-rule", fileUrl: chosenFile, selector, prop: prop.trim(), value: value.trim() });
 		setProp("");
 		setValue("");
