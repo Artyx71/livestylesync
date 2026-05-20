@@ -20,7 +20,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 
-	type LogEntry = { fileUrl: string; selector: string; prop: string; value: string; oldValue: string; mediaQuery?: string; timestamp: number };
+	type LogEntry = { fileUrl: string; selector: string; prop: string; value: string; oldValue: string; mediaQuery?: string; timestamp: number; isScssVar?: boolean };
 	type LogBatch = { id: number; entries: LogEntry[] };
 	const [sessionBatches, setSessionBatches] = useState<LogBatch[]>([]);
 	const appliedState = useRef(new Map<string, string>());
@@ -90,6 +90,22 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		rootVars.apply();
 	};
 
+	const handleScssVarsApply = () => {
+		const entries: LogEntry[] = [];
+		Object.entries(scssVars.pending).forEach(([key, value]) => {
+			const sep = key.indexOf("|||");
+			const fileUrl = key.slice(0, sep);
+			const name = key.slice(sep + 3);
+			const def = scssVars.vars.find((v) => v.fileUrl === fileUrl && v.name === name);
+			if (!def) return;
+			const oldValue = appliedState.current.get(key) ?? def.value;
+			entries.push({ fileUrl, selector: "$scss-var", prop: name, value, oldValue, isScssVar: true, timestamp: Date.now() });
+			appliedState.current.set(key, value);
+		});
+		pushBatch(entries);
+		scssVars.apply();
+	};
+
 	const handleUndo = () => {
 		setSessionBatches((prev) => {
 			const last = prev[prev.length - 1];
@@ -106,6 +122,11 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 	const restoreBatch = (batch: LogBatch) => {
 		batch.entries.forEach((e) => {
+			if (e.isScssVar) {
+				send({ type: "patch-scss-var", fileUrl: e.fileUrl, name: e.prop, value: e.oldValue });
+				appliedState.current.set(`${e.fileUrl}|||${e.prop}`, e.oldValue);
+				return;
+			}
 			send({ fileUrl: e.fileUrl, selector: e.selector, prop: e.prop, value: e.oldValue, mediaQuery: e.mediaQuery });
 			const stateKey = `${e.fileUrl}|||${e.selector}|||${e.prop}|||${e.mediaQuery ?? ""}`;
 			appliedState.current.set(stateKey, e.oldValue);
@@ -373,7 +394,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 									{scssVars.hasPending && (
 										<div style={{ display: "flex", gap: 4, marginTop: 6 }}>
 											<button
-												onClick={scssVars.apply}
+												onClick={handleScssVarsApply}
 												style={{
 													flex: 1,
 													padding: "4px 0",
