@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync-vite-plugin",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Vite plugin for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
