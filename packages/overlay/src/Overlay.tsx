@@ -290,7 +290,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 							fontSize: 12,
 						}}
 					>
-						{picking ? "⊙ Кликни на элемент..." : "↖ Выбрать элемент"}
+						{picking ? "⊙ Click on element..." : "↖ Select Element"}
 					</button>
 
 					<button
