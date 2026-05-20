@@ -33,7 +33,7 @@ function App() {
 
       <div className="demo-card">
         <p className="title">SCSS Test Card</p>
-        <p className="subtitle">Edit me via LiveStyleSync</p>
+        <p className="subtitle">Open "▸ SCSS $variables" in LSS to edit $card-accent, $card-bg, $card-text</p>
       </div>
 
       <div className="bg-violet-900 rounded-xl p-6 text-white max-w-sm mx-auto mt-4">

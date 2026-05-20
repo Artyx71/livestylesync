@@ -1,18 +1,25 @@
+$card-bg: #1a1a2e;
+$card-radius: 12px;
+$card-accent: #a78bfa;
+$card-text: #888;
+$card-font-size: 14px;
+
 .demo-card {
-  background: #1a1a2e;
-  border-radius: 12px;
+  background: $card-bg;
+  border-radius: $card-radius;
   padding: 24px;
   color: #fff;
 
   .title {
-    font-size: 30px;
+    font-size: 40px;
     font-weight: bold;
     margin-bottom: 8px;
+    color: $card-accent;
   }
 
   .subtitle {
-    color: #888;
-    font-size: 14px;
+    color: $card-text;
+    font-size: $card-font-size;
   }
 
   &:hover {
