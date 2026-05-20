@@ -85,6 +85,8 @@ export function startWss(server: ViteDevServer, port: number) {
 				}
 				if (!patched) {
 					socket.send(JSON.stringify({ type: "error", message: `Selector "${selector}" not found in source file` }));
+				} else {
+					socket.send(JSON.stringify({ type: "patched" }));
 				}
 			} catch (err) {
 				console.error("[LSS] patch error:", err);

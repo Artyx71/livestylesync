@@ -24,6 +24,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const appliedState = useRef(new Map<string, string>());
 	const batchId = useRef(0);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
+	const pendingRefresh = useRef(false);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
 	const { pos, onMouseDown: onDragStart } = useDraggable({ x: window.innerWidth - 320, y: window.innerHeight - 500 });
@@ -37,6 +38,10 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		}
 		if (msg.type === "files") {
 			cr.handleFiles(msg.files as string[]);
+		}
+		if (msg.type === "patched" && pendingRefresh.current) {
+			pendingRefresh.current = false;
+			setTimeout(() => editor.refresh(), 300);
 		}
 	});
 
@@ -107,7 +112,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 			}
 		});
 		pushBatch(batch.entries.map((e) => ({ ...e, value: e.oldValue, oldValue: e.value, timestamp: Date.now() })));
-		setTimeout(() => editor.refresh(), 400);
+		pendingRefresh.current = true;
 	};
 
 	const exportDiff = () => {
