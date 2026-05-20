@@ -14,6 +14,12 @@ export interface RootVar {
 	selector: string;
 }
 
+export interface ScssVar {
+	name: string;
+	value: string;
+	fileUrl: string;
+}
+
 export interface RawRule {
 	selectorText: string;
 	parentSelectors: string[];

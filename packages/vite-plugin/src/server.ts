@@ -6,6 +6,7 @@ import { patchCss } from "./patchers/css";
 import { patchScss } from "./patchers/scss";
 import { patchVue } from "./patchers/vue";
 import { createRule } from "./patchers/create";
+import { scanScssVars, patchScssVar } from "./patchers/scss-vars";
 
 const CSS_EXTS = new Set([".css", ".scss", ".vue"]);
 const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", ".nuxt", ".next", "out"]);
@@ -53,6 +54,29 @@ export function startWss(server: ViteDevServer, port: number) {
 				const root = server.config.root;
 				const files = findCssFiles(root);
 				socket.send(JSON.stringify({ type: "files", files }));
+				return;
+			}
+
+			// list SCSS variables from all .scss files
+			if (msg.type === "list-scss-vars") {
+				const root = server.config.root;
+				const scssFiles = findCssFiles(root).filter((f) => f.endsWith(".scss"));
+				const vars = scssFiles.flatMap((f) => scanScssVars(f));
+				socket.send(JSON.stringify({ type: "scss-vars", vars }));
+				return;
+			}
+
+			// patch a single SCSS variable value
+			if (msg.type === "patch-scss-var") {
+				const { fileUrl, name, value } = msg;
+				if (!fileUrl || !name || !value) return;
+				try {
+					patchScssVar(fileUrl, name, value);
+					socket.send(JSON.stringify({ type: "patched" }));
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					socket.send(JSON.stringify({ type: "error", message }));
+				}
 				return;
 			}
 

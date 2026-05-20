@@ -10,11 +10,13 @@ import { useCreateRule } from "./hooks/useCreateRule";
 import { useDraggable } from "./hooks/useDraggable";
 import { useResizable } from "./hooks/useResizable";
 import { useRootVars } from "./hooks/useRootVars";
+import { useScssVars } from "./hooks/useScssVars";
 import { groupKey } from "./css";
 
 export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
 	const [varsOpen, setVarsOpen] = useState(false);
+	const [scssVarsOpen, setScssVarsOpen] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 
@@ -39,6 +41,9 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		if (msg.type === "files") {
 			cr.handleFiles(msg.files as string[]);
 		}
+		if (msg.type === "scss-vars") {
+			scssVars.handleVars(msg.vars as import("./types").ScssVar[]);
+		}
 		if (msg.type === "patched" && pendingRefresh.current) {
 			pendingRefresh.current = false;
 			setTimeout(() => editor.refresh(), 300);
@@ -48,6 +53,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const cr = useCreateRule(selected, send, () => {});
 	const editor = useStyleEditor(selected, send);
 	const rootVars = useRootVars(send);
+	const scssVars = useScssVars(send);
 
 	const pushBatch = (entries: LogEntry[]) => {
 		if (entries.length === 0) return;
@@ -287,6 +293,122 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					>
 						{varsOpen ? "▾ CSS Variables" : "▸ CSS Variables"}
 					</button>
+
+					<button
+						onClick={() => {
+							const next = !scssVarsOpen;
+							setScssVarsOpen(next);
+							if (next) scssVars.load();
+						}}
+						style={{
+							width: "100%",
+							padding: "6px 0",
+							marginTop: 6,
+							background: scssVarsOpen ? "#1a1a2e" : "#2d2d4e",
+							color: scssVarsOpen ? "#f59e0b" : "#888",
+							border: "1px solid " + (scssVarsOpen ? "#d97706" : "#444"),
+							borderRadius: 6,
+							cursor: "pointer",
+							fontFamily: "monospace",
+							fontSize: 11,
+						}}
+					>
+						{scssVarsOpen ? "▾ SCSS $variables" : "▸ SCSS $variables"}
+					</button>
+
+					{scssVarsOpen && (
+						<div style={{ marginTop: 8 }}>
+							{scssVars.vars.length === 0 ? (
+								<p style={{ color: "#555", fontSize: 11, margin: 0 }}>No SCSS variables found</p>
+							) : (
+								<>
+									{Object.entries(
+										scssVars.vars.reduce<Record<string, typeof scssVars.vars>>((acc, v) => {
+											const file = v.fileUrl.split("/").pop() ?? v.fileUrl;
+											if (!acc[file]) acc[file] = [];
+											acc[file].push(v);
+											return acc;
+										}, {})
+									).map(([file, fileVars]) => (
+										<div key={file}>
+											<div style={{ color: "#555", fontSize: 9, marginBottom: 4, marginTop: 6 }}>{file}</div>
+											{fileVars.map((v) => {
+												const key = `${v.fileUrl}|||${v.name}`;
+												const current = scssVars.pending[key] ?? v.value;
+												const changed = key in scssVars.pending;
+												return (
+													<div key={key} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
+														<span
+															title={v.name}
+															style={{
+																flex: 1,
+																color: changed ? "#f59e0b" : "#888",
+																fontSize: 10,
+																overflow: "hidden",
+																textOverflow: "ellipsis",
+																whiteSpace: "nowrap",
+															}}
+														>
+															{v.name}
+														</span>
+														<input
+															value={current}
+															onChange={(e) => scssVars.handleChange(v.fileUrl, v.name, e.target.value)}
+															style={{
+																width: 100,
+																background: changed ? "#1a1a2e" : "#2d2d4e",
+																color: "#fff",
+																border: "1px solid " + (changed ? "#d97706" : "#444"),
+																borderRadius: 3,
+																padding: "2px 4px",
+																fontFamily: "monospace",
+																fontSize: 10,
+															}}
+														/>
+													</div>
+												);
+											})}
+										</div>
+									))}
+									{scssVars.hasPending && (
+										<div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+											<button
+												onClick={scssVars.apply}
+												style={{
+													flex: 1,
+													padding: "4px 0",
+													background: "#451a03",
+													color: "#fcd34d",
+													border: "1px solid #d97706",
+													borderRadius: 4,
+													cursor: "pointer",
+													fontFamily: "monospace",
+													fontSize: 10,
+												}}
+											>
+												Apply
+											</button>
+											<button
+												onClick={scssVars.reset}
+												style={{
+													padding: "4px 8px",
+													background: "transparent",
+													color: "#888",
+													border: "1px solid #333",
+													borderRadius: 4,
+													cursor: "pointer",
+													fontFamily: "monospace",
+													fontSize: 10,
+												}}
+											>
+												✕
+											</button>
+										</div>
+									)}
+								</>
+							)}
+						</div>
+					)}
 
 					{varsOpen && (
 						<div style={{ marginTop: 8 }}>
