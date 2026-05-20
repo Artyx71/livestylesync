@@ -9,10 +9,15 @@ import { AddPropertyRow } from "./components/AddPropertyRow";
 import { useCreateRule } from "./hooks/useCreateRule";
 import { useDraggable } from "./hooks/useDraggable";
 import { useRootVars } from "./hooks/useRootVars";
+import { groupKey } from "./css";
 
 export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
 	const [varsOpen, setVarsOpen] = useState(false);
+	const [copied, setCopied] = useState(false);
+
+	type LogEntry = { fileUrl: string; selector: string; prop: string; value: string; mediaQuery?: string };
+	const [sessionLog, setSessionLog] = useState<LogEntry[]>([]);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
@@ -32,6 +37,66 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const cr = useCreateRule(selected, send, () => {});
 	const editor = useStyleEditor(selected, send);
 	const rootVars = useRootVars(send);
+
+	const handleApply = () => {
+		const entries: LogEntry[] = [];
+		Object.entries(editor.allPending).forEach(([key, changes]) => {
+			const group = editor.ruleGroups.find((g) => groupKey(g) === key);
+			if (!group) return;
+			Object.entries(changes).forEach(([prop, value]) => {
+				entries.push({ fileUrl: group.fileUrl, selector: group.selector, prop, value, mediaQuery: group.mediaQuery });
+			});
+		});
+		if (entries.length > 0) setSessionLog((prev) => [...prev, ...entries]);
+		editor.applyToFile(editor.groupStyles);
+	};
+
+	const handleVarsApply = () => {
+		const entries: LogEntry[] = [];
+		Object.entries(rootVars.pending).forEach(([name, value]) => {
+			const def = rootVars.vars.find((v) => v.name === name);
+			if (!def) return;
+			entries.push({ fileUrl: def.fileUrl, selector: def.selector, prop: name, value });
+		});
+		if (entries.length > 0) setSessionLog((prev) => [...prev, ...entries]);
+		rootVars.apply();
+	};
+
+	const exportDiff = () => {
+		const final = new Map<string, LogEntry>();
+		sessionLog.forEach((e) => final.set(`${e.fileUrl}|||${e.selector}|||${e.prop}`, e));
+
+		const byFile = new Map<string, LogEntry[]>();
+		final.forEach((e) => {
+			if (!byFile.has(e.fileUrl)) byFile.set(e.fileUrl, []);
+			byFile.get(e.fileUrl)!.push(e);
+		});
+
+		let text = `/* LiveStyleSync session diff */\n\n`;
+		for (const [file, entries] of byFile) {
+			text += `/* ${file.split("/").slice(-2).join("/")} */\n`;
+			const bySelector = new Map<string, LogEntry[]>();
+			entries.forEach((e) => {
+				const k = e.selector + (e.mediaQuery ? ` { @media ${e.mediaQuery} }` : "");
+				if (!bySelector.has(k)) bySelector.set(k, []);
+				bySelector.get(k)!.push(e);
+			});
+			for (const [, props] of bySelector) {
+				const mq = props[0].mediaQuery;
+				const sel = props[0].selector;
+				if (mq) text += `@media ${mq} {\n  ${sel} {\n`;
+				else text += `${sel} {\n`;
+				props.forEach((p) => { text += mq ? `    ${p.prop}: ${p.value};\n` : `  ${p.prop}: ${p.value};\n`; });
+				text += mq ? `  }\n}\n` : `}\n`;
+			}
+			text += "\n";
+		}
+
+		navigator.clipboard.writeText(text).then(() => {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		});
+	};
 
 	const hasSource = editor.ruleGroups.length > 0;
 
@@ -190,7 +255,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 									{rootVars.hasPending && (
 										<div style={{ display: "flex", gap: 4, marginTop: 6 }}>
 											<button
-												onClick={rootVars.apply}
+												onClick={handleVarsApply}
 												style={{
 													flex: 1,
 													padding: "4px 0",
@@ -353,7 +418,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 							{editor.totalPending > 0 && (
 								<button
-									onClick={() => editor.applyToFile(editor.groupStyles)}
+									onClick={handleApply}
 									style={{
 										width: "100%",
 										padding: "6px 0",
@@ -399,6 +464,26 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 								</p>
 							)}
 						</>
+					)}
+
+					{sessionLog.length > 0 && (
+						<button
+							onClick={exportDiff}
+							style={{
+								width: "100%",
+								padding: "4px 0",
+								marginTop: 8,
+								background: "transparent",
+								color: copied ? "#6ee7b7" : "#555",
+								border: "1px solid " + (copied ? "#059669" : "#333"),
+								borderRadius: 6,
+								cursor: "pointer",
+								fontFamily: "monospace",
+								fontSize: 10,
+							}}
+						>
+							{copied ? "✓ Copied!" : "📋 Export session diff"}
+						</button>
 					)}
 				</div>
 			)}

@@ -64,7 +64,7 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 					fileUrl: group.fileUrl,
 					selector: group.selector,
 					prop,
-					oldValue: currentGroupStyles[key]?.[prop] ?? "",
+					oldValue: group.styles[prop] ?? "",
 					mediaQuery: group.mediaQuery,
 				});
 				send({ fileUrl: group.fileUrl, selector: group.selector, prop, value, mediaQuery: group.mediaQuery });
