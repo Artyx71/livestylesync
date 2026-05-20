@@ -10,6 +10,7 @@ export function useWebSocket(url: string, onMessage?: (data: unknown) => void) {
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const destroyed = useRef(false);
 	const onMessageRef = useRef(onMessage);
+	const queue = useRef<string[]>([]);
 	const [status, setStatus] = useState<WsStatus>("disconnected");
 
 	useEffect(() => { onMessageRef.current = onMessage; });
@@ -26,6 +27,9 @@ export function useWebSocket(url: string, onMessage?: (data: unknown) => void) {
 				attempt.current = 0;
 				setStatus("connected");
 				console.log("[LSS] connected");
+				while (queue.current.length > 0) {
+					socket.send(queue.current.shift()!);
+				}
 			};
 
 			socket.onclose = () => {
@@ -55,8 +59,11 @@ export function useWebSocket(url: string, onMessage?: (data: unknown) => void) {
 	}, [url]);
 
 	const send = (data: object) => {
+		const msg = JSON.stringify(data);
 		if (ws.current?.readyState === WebSocket.OPEN) {
-			ws.current.send(JSON.stringify(data));
+			ws.current.send(msg);
+		} else {
+			queue.current.push(msg);
 		}
 	};
 
