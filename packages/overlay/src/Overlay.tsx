@@ -8,6 +8,7 @@ import { StyleRows } from "./components/StyleRows";
 import { AddPropertyRow } from "./components/AddPropertyRow";
 import { useCreateRule } from "./hooks/useCreateRule";
 import { useDraggable } from "./hooks/useDraggable";
+import { useResizable } from "./hooks/useResizable";
 import { useRootVars } from "./hooks/useRootVars";
 import { groupKey } from "./css";
 
@@ -22,6 +23,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
 	const { pos, onMouseDown: onDragStart } = useDraggable({ x: window.innerWidth - 320, y: window.innerHeight - 500 });
+	const { width, onResizeMouseDown } = useResizable(300);
 
 	const { send, status } = useWebSocket(`ws://localhost:${port}`, (data) => {
 		if (!data || typeof data !== "object") return;
@@ -136,7 +138,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					position: "fixed",
 					left: pos.x,
 					top: pos.y,
-					width: 300,
+					width,
 					maxHeight: "70vh",
 					overflowY: "auto",
 					background: "#1a1a2e",
@@ -147,7 +149,31 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					color: "#fff",
 					fontFamily: "monospace",
 					fontSize: 12,
+					boxSizing: "border-box",
 				}}>
+					<div
+						onMouseDown={onResizeMouseDown}
+						style={{
+							position: "absolute",
+							top: 0,
+							right: 0,
+							width: 6,
+							height: "100%",
+							cursor: "ew-resize",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							borderRadius: "0 8px 8px 0",
+						}}
+					>
+						<div style={{
+							width: 2,
+							height: 24,
+							background: "#4f46e5",
+							borderRadius: 1,
+							opacity: 0.5,
+						}} />
+					</div>
 					<div
 						onMouseDown={onDragStart}
 						style={{
