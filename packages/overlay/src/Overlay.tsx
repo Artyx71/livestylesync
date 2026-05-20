@@ -15,10 +15,14 @@ import { groupKey } from "./css";
 export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
 	const [varsOpen, setVarsOpen] = useState(false);
+	const [historyOpen, setHistoryOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 
-	type LogEntry = { fileUrl: string; selector: string; prop: string; value: string; mediaQuery?: string };
-	const [sessionLog, setSessionLog] = useState<LogEntry[]>([]);
+	type LogEntry = { fileUrl: string; selector: string; prop: string; value: string; oldValue: string; mediaQuery?: string; timestamp: number };
+	type LogBatch = { id: number; entries: LogEntry[] };
+	const [sessionBatches, setSessionBatches] = useState<LogBatch[]>([]);
+	const appliedState = useRef(new Map<string, string>());
+	const batchId = useRef(0);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
@@ -40,16 +44,24 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const editor = useStyleEditor(selected, send);
 	const rootVars = useRootVars(send);
 
+	const pushBatch = (entries: LogEntry[]) => {
+		if (entries.length === 0) return;
+		setSessionBatches((prev) => [...prev, { id: ++batchId.current, entries }]);
+	};
+
 	const handleApply = () => {
 		const entries: LogEntry[] = [];
 		Object.entries(editor.allPending).forEach(([key, changes]) => {
 			const group = editor.ruleGroups.find((g) => groupKey(g) === key);
 			if (!group) return;
 			Object.entries(changes).forEach(([prop, value]) => {
-				entries.push({ fileUrl: group.fileUrl, selector: group.selector, prop, value, mediaQuery: group.mediaQuery });
+				const stateKey = `${group.fileUrl}|||${group.selector}|||${prop}|||${group.mediaQuery ?? ""}`;
+				const oldValue = appliedState.current.get(stateKey) ?? group.styles[prop] ?? "";
+				entries.push({ fileUrl: group.fileUrl, selector: group.selector, prop, value, oldValue, mediaQuery: group.mediaQuery, timestamp: Date.now() });
+				appliedState.current.set(stateKey, value);
 			});
 		});
-		if (entries.length > 0) setSessionLog((prev) => [...prev, ...entries]);
+		pushBatch(entries);
 		editor.applyToFile(editor.groupStyles);
 	};
 
@@ -58,15 +70,49 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		Object.entries(rootVars.pending).forEach(([name, value]) => {
 			const def = rootVars.vars.find((v) => v.name === name);
 			if (!def) return;
-			entries.push({ fileUrl: def.fileUrl, selector: def.selector, prop: name, value });
+			const stateKey = `${def.fileUrl}|||${def.selector}|||${name}|||`;
+			const oldValue = appliedState.current.get(stateKey) ?? def.value;
+			entries.push({ fileUrl: def.fileUrl, selector: def.selector, prop: name, value, oldValue, timestamp: Date.now() });
+			appliedState.current.set(stateKey, value);
 		});
-		if (entries.length > 0) setSessionLog((prev) => [...prev, ...entries]);
+		pushBatch(entries);
 		rootVars.apply();
+	};
+
+	const handleUndo = () => {
+		setSessionBatches((prev) => {
+			const last = prev[prev.length - 1];
+			if (last) {
+				last.entries.forEach((e) => {
+					const stateKey = `${e.fileUrl}|||${e.selector}|||${e.prop}|||${e.mediaQuery ?? ""}`;
+					appliedState.current.set(stateKey, e.oldValue);
+				});
+			}
+			return prev.slice(0, -1);
+		});
+		editor.undo();
+	};
+
+	const restoreBatch = (batch: LogBatch) => {
+		batch.entries.forEach((e) => {
+			send({ fileUrl: e.fileUrl, selector: e.selector, prop: e.prop, value: e.oldValue, mediaQuery: e.mediaQuery });
+			const stateKey = `${e.fileUrl}|||${e.selector}|||${e.prop}|||${e.mediaQuery ?? ""}`;
+			appliedState.current.set(stateKey, e.oldValue);
+			if (selected) {
+				try {
+					if (selected.matches(e.selector)) {
+						(selected as HTMLElement).style.setProperty(e.prop, e.oldValue);
+					}
+				} catch { /* selector may not match current element */ }
+			}
+		});
+		pushBatch(batch.entries.map((e) => ({ ...e, value: e.oldValue, oldValue: e.value, timestamp: Date.now() })));
+		setTimeout(() => editor.refresh(), 400);
 	};
 
 	const exportDiff = () => {
 		const final = new Map<string, LogEntry>();
-		sessionLog.forEach((e) => final.set(`${e.fileUrl}|||${e.selector}|||${e.prop}`, e));
+		sessionBatches.flatMap((b) => b.entries).forEach((e) => final.set(`${e.fileUrl}|||${e.selector}|||${e.prop}`, e));
 
 		const byFile = new Map<string, LogEntry[]>();
 		final.forEach((e) => {
@@ -466,7 +512,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 
 							{editor.canUndo && (
 								<button
-									onClick={editor.undo}
+									onClick={handleUndo}
 									style={{
 										width: "100%",
 										padding: "4px 0",
@@ -492,24 +538,92 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 						</>
 					)}
 
-					{sessionLog.length > 0 && (
-						<button
-							onClick={exportDiff}
-							style={{
-								width: "100%",
-								padding: "4px 0",
-								marginTop: 8,
-								background: "transparent",
-								color: copied ? "#6ee7b7" : "#555",
-								border: "1px solid " + (copied ? "#059669" : "#333"),
-								borderRadius: 6,
-								cursor: "pointer",
-								fontFamily: "monospace",
-								fontSize: 10,
-							}}
-						>
-							{copied ? "✓ Copied!" : "📋 Export session diff"}
-						</button>
+					{sessionBatches.length > 0 && (
+						<>
+							<button
+								onClick={() => setHistoryOpen((v) => !v)}
+								style={{
+									width: "100%",
+									padding: "4px 0",
+									marginTop: 8,
+									background: "transparent",
+									color: "#888",
+									border: "1px solid #333",
+									borderRadius: 6,
+									cursor: "pointer",
+									fontFamily: "monospace",
+									fontSize: 10,
+								}}
+							>
+								{historyOpen ? "▾" : "▸"} History ({sessionBatches.length} {sessionBatches.length === 1 ? "apply" : "applies"})
+							</button>
+
+							{historyOpen && (
+								<div style={{ marginTop: 6 }}>
+									{[...sessionBatches].reverse().map((batch) => (
+										<div key={batch.id} style={{
+											marginBottom: 6,
+											padding: "5px 6px",
+											background: "#0f0f1a",
+											borderRadius: 4,
+											border: "1px solid #2d2d4e",
+										}}>
+											<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+												<span style={{ color: "#555", fontSize: 9 }}>
+													{new Date(batch.entries[0].timestamp).toLocaleTimeString()}
+												</span>
+												<button
+													onClick={() => restoreBatch(batch)}
+													title="Restore all to previous values"
+													style={{
+														padding: "1px 6px",
+														background: "transparent",
+														color: "#555",
+														border: "1px solid #333",
+														borderRadius: 3,
+														cursor: "pointer",
+														fontFamily: "monospace",
+														fontSize: 9,
+													}}
+												>
+													↩ restore
+												</button>
+											</div>
+											{batch.entries.map((e, i) => (
+												<div key={i} style={{ marginBottom: i < batch.entries.length - 1 ? 4 : 0 }}>
+													<div style={{ color: "#444", fontSize: 9, marginBottom: 1 }}>
+														{e.fileUrl.split("/").slice(-2).join("/")} · {e.selector}
+													</div>
+													<div style={{ fontSize: 10, fontFamily: "monospace" }}>
+														<span style={{ color: "#f87171" }}>− {e.prop}: {e.oldValue || "(empty)"}</span>
+													</div>
+													<div style={{ fontSize: 10, fontFamily: "monospace" }}>
+														<span style={{ color: "#6ee7b7" }}>+ {e.prop}: {e.value}</span>
+													</div>
+												</div>
+											))}
+										</div>
+									))}
+									<button
+										onClick={exportDiff}
+										style={{
+											width: "100%",
+											padding: "4px 0",
+											marginTop: 4,
+											background: "transparent",
+											color: copied ? "#6ee7b7" : "#555",
+											border: "1px solid " + (copied ? "#059669" : "#333"),
+											borderRadius: 4,
+											cursor: "pointer",
+											fontFamily: "monospace",
+											fontSize: 10,
+										}}
+									>
+										{copied ? "✓ Copied!" : "📋 Export as CSS"}
+									</button>
+								</div>
+							)}
+						</>
 					)}
 				</div>
 			)}

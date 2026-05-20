@@ -106,6 +106,14 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		});
 	};
 
+	const refresh = () => {
+		if (!selected) return;
+		const groups = findAllSourceStyles(selected);
+		setRuleGroups(groups);
+		setGroupStyles(Object.fromEntries(groups.map((g) => [groupKey(g), g.styles])));
+		setAllPending({});
+	};
+
 	const totalPending = Object.values(allPending).reduce((sum, g) => sum + Object.keys(g).length, 0);
 
 	return {
@@ -129,5 +137,6 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		undo,
 		canUndo: undoStack.length > 0,
 		totalPending,
+		refresh,
 	};
 }
