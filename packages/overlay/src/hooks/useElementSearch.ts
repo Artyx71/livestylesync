@@ -16,6 +16,7 @@ export function useElementSearch(
 		setQuery(q);
 		if (!q.trim()) { setMatches([]); return; }
 		const trimmed = q.trim();
+		if (trimmed === "*") { setMatches([]); return; }
 		let results: Element[] = [];
 
 		try {
