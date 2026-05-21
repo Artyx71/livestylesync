@@ -7,6 +7,7 @@ import { GroupTabs } from "./components/GroupTabs";
 import { StyleRows } from "./components/StyleRows";
 import { AddPropertyRow } from "./components/AddPropertyRow";
 import { useCreateRule } from "./hooks/useCreateRule";
+import { useElementSearch } from "./hooks/useElementSearch";
 import { useDraggable } from "./hooks/useDraggable";
 import { useResizable } from "./hooks/useResizable";
 import { useRootVars } from "./hooks/useRootVars";
@@ -26,6 +27,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const appliedState = useRef(new Map<string, string>());
 	const batchId = useRef(0);
 	const overlayRootRef = useRef<HTMLDivElement>(null);
+	const searchHighlightRef = useRef<HTMLDivElement>(null);
 	const pendingRefresh = useRef(false);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
@@ -50,6 +52,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		}
 	});
 
+	const elSearch = useElementSearch(overlayRootRef, searchHighlightRef, setSelected);
 	const cr = useCreateRule(selected, send, () => {});
 	const editor = useStyleEditor(selected, send);
 	const rootVars = useRootVars(send);
@@ -193,6 +196,17 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					zIndex: 9998,
 				}}
 			/>
+			<div
+				ref={searchHighlightRef}
+				style={{
+					display: "none",
+					position: "fixed",
+					pointerEvents: "none",
+					outline: "2px solid #10b981",
+					background: "rgba(16,185,129,0.08)",
+					zIndex: 9998,
+				}}
+			/>
 
 			<button
 				onClick={() => setOpen((v) => !v)}
@@ -292,6 +306,61 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					>
 						{picking ? "⊙ Click on element..." : "↖ Select Element"}
 					</button>
+
+					<div style={{ position: "relative", marginTop: 6 }}>
+						<input
+							value={elSearch.query}
+							placeholder="Search .class, #id, or selector"
+							onChange={(e) => elSearch.search(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") elSearch.select();
+								if (e.key === "ArrowDown") { e.preventDefault(); elSearch.next(); }
+								if (e.key === "ArrowUp") { e.preventDefault(); elSearch.prev(); }
+								if (e.key === "Escape") elSearch.clear();
+							}}
+							style={{
+								width: "100%",
+								boxSizing: "border-box",
+								padding: "5px 8px",
+								paddingRight: elSearch.matches.length > 0 ? 64 : 8,
+								background: "#2d2d4e",
+								color: "#fff",
+								border: "1px solid " + (elSearch.matches.length > 0 ? "#10b981" : "#444"),
+								borderRadius: 6,
+								fontFamily: "monospace",
+								fontSize: 11,
+								outline: "none",
+							}}
+						/>
+						{elSearch.matches.length > 0 && (
+							<div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 2 }}>
+								<span style={{ color: "#10b981", fontSize: 10, fontFamily: "monospace" }}>
+									{elSearch.focusIdx + 1}/{elSearch.matches.length}
+								</span>
+								<button onClick={elSearch.prev} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", padding: "0 2px", fontSize: 10 }}>↑</button>
+								<button onClick={elSearch.next} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", padding: "0 2px", fontSize: 10 }}>↓</button>
+							</div>
+						)}
+					</div>
+					{elSearch.matches.length > 0 && (
+						<button
+							onClick={elSearch.select}
+							style={{
+								width: "100%",
+								padding: "4px 0",
+								marginTop: 4,
+								background: "#064e3b",
+								color: "#10b981",
+								border: "1px solid #10b981",
+								borderRadius: 6,
+								cursor: "pointer",
+								fontFamily: "monospace",
+								fontSize: 11,
+							}}
+						>
+							Select highlighted element
+						</button>
+					)}
 
 					<button
 						onClick={() => {
