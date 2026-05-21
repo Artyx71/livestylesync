@@ -25,7 +25,7 @@ export function scanScssVars(filePath: string): ScssVarDef[] {
 	}
 }
 
-export function patchScssVar(filePath: string, name: string, value: string): void {
+export function patchScssVar(filePath: string, name: string, value: string): boolean {
 	const src = readFileSync(filePath, "utf-8");
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const scssParser = postcssScss as any;
@@ -39,9 +39,10 @@ export function patchScssVar(filePath: string, name: string, value: string): voi
 			found = true;
 		}
 	});
-	if (!found) return;
+	if (!found) return false;
 	let output = "";
 	scssParser.stringify(root, (str: string) => { output += str; });
 	writeFileSync(filePath, output, "utf-8");
 	console.log(`[LSS] wrote SCSS var ${name}: ${value} → ${filePath}`);
+	return true;
 }

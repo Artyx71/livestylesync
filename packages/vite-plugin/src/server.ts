@@ -69,10 +69,14 @@ export function startWss(server: ViteDevServer, port: number) {
 			// patch a single SCSS variable value
 			if (msg.type === "patch-scss-var") {
 				const { fileUrl, name, value } = msg;
-				if (!fileUrl || !name || !value) return;
+				if (!fileUrl || !name || value == null) return;
 				try {
-					patchScssVar(fileUrl, name, value);
-					socket.send(JSON.stringify({ type: "patched" }));
+					const ok = patchScssVar(fileUrl, name, value);
+					if (!ok) {
+						socket.send(JSON.stringify({ type: "error", message: `SCSS variable "${name}" not found in source file` }));
+					} else {
+						socket.send(JSON.stringify({ type: "patched" }));
+					}
 				} catch (err) {
 					const message = err instanceof Error ? err.message : String(err);
 					socket.send(JSON.stringify({ type: "error", message }));
@@ -94,7 +98,7 @@ export function startWss(server: ViteDevServer, port: number) {
 				return;
 			}
 
-			if (!msg.fileUrl || !msg.selector || !msg.prop || !msg.value) return;
+			if (!msg.fileUrl || !msg.selector || !msg.prop || msg.value == null) return;
 
 			const { fileUrl, selector, prop, value, mediaQuery } = msg;
 
