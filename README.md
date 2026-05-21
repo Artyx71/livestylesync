@@ -171,6 +171,7 @@ mount({ port: 3100 })         // Overlay — must match
 | Feature | Description |
 |---|---|
 | **Element picker** | Click any element to inspect it |
+| **Element search** | Find elements by `.class`, `#id`, or CSS selector with live highlight |
 | **DOM breadcrumbs** | Navigate parent/child elements |
 | **Pseudo-state tabs** | Edit `:hover`, `:focus`, `:active` styles |
 | **Responsive tabs** | Edit `@media` breakpoint styles |
@@ -240,6 +241,7 @@ Open `http://localhost:5173` — the LSS panel appears in the bottom-right corne
 - [x] CSS custom properties editor
 - [x] SCSS $variable editor
 - [x] Create rules for unstyled elements
+- [x] Element search by class / id / selector with highlight
 - [ ] Next.js / webpack support
 - [ ] Storybook integration
 
