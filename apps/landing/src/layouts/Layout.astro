@@ -9,7 +9,7 @@ const {
 	description = "Click any element, tweak in the panel, changes go straight to your source files. A browser overlay for Vite, Next.js, Vue, Nuxt and more.",
 } = Astro.props;
 
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <!doctype html>
@@ -22,7 +22,7 @@ const base = import.meta.env.BASE_URL;
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:type" content="website" />
-		<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+		<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
