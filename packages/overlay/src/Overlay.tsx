@@ -139,18 +139,31 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		scssVars.apply();
 	};
 
-	const handleUndo = () => {
+	const undoLastBatch = () => {
 		setSessionBatches((prev) => {
+			if (prev.length === 0) return prev;
 			const last = prev[prev.length - 1];
-			if (last) {
-				last.entries.forEach((e) => {
+			last.entries.forEach((e) => {
+				if (e.isScssVar) {
+					send({ type: "patch-scss-var", fileUrl: e.fileUrl, name: e.prop, value: e.oldValue });
+					appliedState.current.set(`${e.fileUrl}|||${e.prop}`, e.oldValue);
+				} else {
+					send({ fileUrl: e.fileUrl, selector: e.selector, prop: e.prop, value: e.oldValue, mediaQuery: e.mediaQuery });
 					const stateKey = `${e.fileUrl}|||${e.selector}|||${e.prop}|||${e.mediaQuery ?? ""}`;
 					appliedState.current.set(stateKey, e.oldValue);
-				});
-			}
+					if (selected) {
+						try {
+							if (selected.matches(e.selector)) {
+								(selected as HTMLElement).style.setProperty(e.prop, e.oldValue);
+							}
+						} catch { /* skip */ }
+					}
+				}
+			});
+			pendingRefresh.current = true;
 			return prev.slice(0, -1);
 		});
-		editor.undo();
+		editor.setServerError(null);
 	};
 
 	const restoreBatch = (batch: LogBatch) => {
@@ -795,9 +808,9 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 								</button>
 							)}
 
-							{editor.canUndo && (
+							{sessionBatches.length > 0 && (
 								<button
-									onClick={handleUndo}
+									onClick={undoLastBatch}
 									style={{
 										width: "100%",
 										padding: "4px 0",
