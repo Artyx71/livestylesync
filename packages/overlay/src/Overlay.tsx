@@ -149,13 +149,26 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		const final = new Map<string, LogEntry>();
 		sessionBatches.flatMap((b) => b.entries).forEach((e) => final.set(`${e.fileUrl}|||${e.selector}|||${e.prop}`, e));
 
+		const cssEntries = [...final.values()].filter((e) => !e.isScssVar);
+		const scssVarEntries = [...final.values()].filter((e) => e.isScssVar);
+
 		const byFile = new Map<string, LogEntry[]>();
-		final.forEach((e) => {
+		cssEntries.forEach((e) => {
 			if (!byFile.has(e.fileUrl)) byFile.set(e.fileUrl, []);
 			byFile.get(e.fileUrl)!.push(e);
 		});
 
 		let text = `/* LiveStyleSync session diff */\n\n`;
+
+		if (scssVarEntries.length > 0) {
+			text += `/* SCSS variables changed:\n`;
+			scssVarEntries.forEach((e) => {
+				const file = e.fileUrl.split("/").slice(-2).join("/");
+				text += `   ${e.prop}: ${e.value}; /* ${file} */\n`;
+			});
+			text += `*/\n\n`;
+		}
+
 		for (const [file, entries] of byFile) {
 			text += `/* ${file.split("/").slice(-2).join("/")} */\n`;
 			const bySelector = new Map<string, LogEntry[]>();
