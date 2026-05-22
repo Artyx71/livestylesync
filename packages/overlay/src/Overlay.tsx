@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "./useWebSocket";
 import { useElementPicker } from "./hooks/useElementPicker";
 import { useStyleEditor } from "./hooks/useStyleEditor";
@@ -20,6 +20,8 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const [scssVarsOpen, setScssVarsOpen] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
+	const [toast, setToast] = useState(false);
+	const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	type LogEntry = { fileUrl: string; selector: string; prop: string; value: string; oldValue: string; mediaQuery?: string; timestamp: number; isScssVar?: boolean };
 	type LogBatch = { id: number; entries: LogEntry[] };
@@ -52,11 +54,31 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		if (msg.type === "scss-vars") {
 			scssVars.handleVars(msg.vars as import("./types").ScssVar[]);
 		}
-		if (msg.type === "patched" && pendingRefresh.current) {
-			pendingRefresh.current = false;
-			setTimeout(() => editor.refresh(), 300);
+		if (msg.type === "patched") {
+			showToast();
+			if (pendingRefresh.current) {
+				pendingRefresh.current = false;
+				setTimeout(() => editor.refresh(), 300);
+			}
 		}
 	});
+
+	const showToast = () => {
+		if (toastTimer.current) clearTimeout(toastTimer.current);
+		setToast(true);
+		toastTimer.current = setTimeout(() => setToast(false), 2000);
+	};
+
+	useEffect(() => {
+		const handler = (e: KeyboardEvent) => {
+			if (e.altKey && e.key === "s") {
+				e.preventDefault();
+				setOpen((v) => !v);
+			}
+		};
+		document.addEventListener("keydown", handler);
+		return () => document.removeEventListener("keydown", handler);
+	}, []);
 
 	const elSearch = useElementSearch(overlayRootRef, searchHighlightRef, setSelected);
 	const cr = useCreateRule(selected, send, () => {});
@@ -229,8 +251,28 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 				}}
 			/>
 
+			{toast && (
+				<div style={{
+					position: "fixed",
+					bottom: 40,
+					right: 20,
+					background: "#065f46",
+					color: "#6ee7b7",
+					border: "1px solid #059669",
+					borderRadius: 6,
+					padding: "4px 10px",
+					fontFamily: "monospace",
+					fontSize: 11,
+					zIndex: 10000,
+					pointerEvents: "none",
+				}}>
+					✓ Saved
+				</div>
+			)}
+
 			<button
 				onClick={() => setOpen((v) => !v)}
+				title="Toggle LiveStyleSync (Alt+S)"
 				style={{
 					position: "fixed",
 					bottom: 20,
