@@ -9,8 +9,14 @@ No copy-pasting between DevTools and your editor.
 
 ## Install
 
+**Vite / Vue / Nuxt / SvelteKit / Astro / Solid:**
 ```bash
 npm install livestylesync-overlay livestylesync-vite-plugin
+```
+
+**Next.js:**
+```bash
+npm install livestylesync-overlay livestylesync-nextjs
 ```
 
 ---
@@ -36,6 +42,37 @@ if (import.meta.env.DEV) {
   mount();
 }
 ```
+
+---
+
+### Next.js 14+
+
+```ts
+// next.config.ts
+import { withLiveStyleSync } from "livestylesync-nextjs";
+
+export default withLiveStyleSync({
+  // ...your existing Next.js config
+});
+```
+
+```tsx
+// app/layout.tsx  (or pages/_app.tsx)
+import { Overlay } from "livestylesync-overlay";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>
+        {children}
+        {process.env.NODE_ENV === "development" && <Overlay />}
+      </body>
+    </html>
+  );
+}
+```
+
+> Works with both App Router and Pages Router. Turbopack (`--turbo`) is not yet supported.
 
 ---
 
@@ -158,8 +195,9 @@ if (import.meta.env.DEV) {
 ## Options
 
 ```ts
-liveStyleSync({ port: 3100 }) // Vite plugin — default port
-mount({ port: 3100 })         // Overlay — must match
+liveStyleSync({ port: 3100 })      // Vite plugin — default port
+withLiveStyleSync({}, { port: 3100 }) // Next.js plugin — default port
+mount({ port: 3100 })              // Overlay — must match
 ```
 
 > Both sides must use the same port. Change only if 3100 is taken.
@@ -183,6 +221,8 @@ mount({ port: 3100 })         // Overlay — must match
 | **Restore batches** | Click any past batch to restore it |
 | **Export diff** | Copy the full session diff to clipboard |
 | **Draggable & resizable** | Position the panel anywhere on screen |
+| **Keyboard shortcuts** | `Alt+S` toggle panel, `↑↓` nudge numbers (±1 / Shift ±10 / Alt ±0.1) |
+| **Color picker** | Native color picker for color/background/border properties |
 | **Tailwind detection** | Warns when the element uses Tailwind utilities |
 | **Instant preview** | Changes apply visually before saving |
 | **Write to source** | Patches the exact rule in your file, HMR picks it up |
@@ -242,7 +282,9 @@ Open `http://localhost:5173` — the LSS panel appears in the bottom-right corne
 - [x] SCSS $variable editor
 - [x] Create rules for unstyled elements
 - [x] Element search by class / id / selector with highlight
-- [ ] Next.js / webpack support
+- [x] Keyboard shortcuts (Alt+S, arrow key nudge)
+- [x] Native color picker for color properties
+- [x] Next.js / webpack support
 - [ ] Storybook integration
 
 ---
@@ -264,8 +306,10 @@ pnpm install
 ```
 packages/
   overlay/        # Browser panel (Preact + TypeScript, bundled with tsup)
-  vite-plugin/    # Vite plugin + WebSocket server + CSS/SCSS patchers
-  livestylesync/  # Meta-package re-exporting both
+  server-core/    # Framework-agnostic WebSocket server + CSS/SCSS patchers
+  vite-plugin/    # Vite plugin — thin wrapper around server-core
+  nextjs-plugin/  # Next.js webpack plugin — thin wrapper around server-core
+  livestylesync/  # Meta-package re-exporting overlay + vite-plugin
 apps/
   demo/           # Vite + React demo app for manual testing
 ```
@@ -276,8 +320,9 @@ apps/
 # Run the demo (watches overlay + plugin via pnpm workspaces)
 cd apps/demo && pnpm dev
 
-# After changing overlay or vite-plugin source, rebuild:
+# After changing overlay or plugin source, rebuild:
 pnpm --filter livestylesync-overlay build
+pnpm --filter livestylesync-server-core build
 pnpm --filter livestylesync-vite-plugin build
 # Then restart the demo dev server
 ```
@@ -285,7 +330,7 @@ pnpm --filter livestylesync-vite-plugin build
 ### Run tests
 
 ```bash
-pnpm --filter livestylesync-vite-plugin test
+pnpm --filter livestylesync-server-core test
 ```
 
 ### Opening issues
@@ -303,7 +348,7 @@ Feature requests are welcome too — describe the use case, not just the solutio
 
 - One PR per fix or feature
 - Keep changes focused — avoid unrelated cleanup in the same PR
-- Add a test if you're changing patcher logic (`packages/vite-plugin/src/patchers/`)
+- Add a test if you're changing patcher logic (`packages/server-core/src/patchers/`)
 - Run `pnpm tsc --noEmit` in the changed package before submitting
 
 ---
