@@ -29,6 +29,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const overlayRootRef = useRef<HTMLDivElement>(null);
 	const searchHighlightRef = useRef<HTMLDivElement>(null);
 	const pendingRefresh = useRef(false);
+	const lastAction = useRef<"css" | "scss-var">("css");
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
 	const { pos, onMouseDown: onDragStart } = useDraggable({ x: window.innerWidth - 320, y: window.innerHeight - 500 });
@@ -38,7 +39,12 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		if (!data || typeof data !== "object") return;
 		const msg = data as Record<string, unknown>;
 		if (msg.type === "error") {
-			editor.setServerError((msg as Record<string, string>).message ?? "Unknown error");
+			const message = (msg as Record<string, string>).message ?? "Unknown error";
+			if (lastAction.current === "scss-var") {
+				scssVars.setError(message);
+			} else {
+				editor.setServerError(message);
+			}
 		}
 		if (msg.type === "files") {
 			cr.handleFiles(msg.files as string[]);
@@ -64,6 +70,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	};
 
 	const handleApply = () => {
+		lastAction.current = "css";
 		const entries: LogEntry[] = [];
 		Object.entries(editor.allPending).forEach(([key, changes]) => {
 			const group = editor.ruleGroups.find((g) => groupKey(g) === key);
@@ -94,6 +101,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	};
 
 	const handleScssVarsApply = () => {
+		lastAction.current = "scss-var";
 		const entries: LogEntry[] = [];
 		Object.entries(scssVars.pending).forEach(([key, value]) => {
 			const sep = key.indexOf("|||");
@@ -507,6 +515,11 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 												✕
 											</button>
 										</div>
+									)}
+									{scssVars.error && (
+										<p style={{ margin: "6px 0 0", fontSize: 10, color: "#f87171", wordBreak: "break-word" }}>
+											✗ {scssVars.error}
+										</p>
 									)}
 								</>
 							)}

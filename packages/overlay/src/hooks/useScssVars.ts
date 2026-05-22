@@ -4,12 +4,14 @@ import type { ScssVar } from "../types";
 export function useScssVars(send: (data: object) => void) {
 	const [vars, setVars] = useState<ScssVar[]>([]);
 	const [pending, setPending] = useState<Record<string, string>>({});
+	const [error, setError] = useState<string | null>(null);
 
 	const load = () => send({ type: "list-scss-vars" });
 
 	const handleVars = (incoming: ScssVar[]) => setVars(incoming);
 
 	const handleChange = (fileUrl: string, name: string, value: string) => {
+		setError(null);
 		setPending((p) => ({ ...p, [`${fileUrl}|||${name}`]: value }));
 	};
 
@@ -29,11 +31,13 @@ export function useScssVars(send: (data: object) => void) {
 		setPending({});
 	};
 
-	const reset = () => setPending({});
+	const reset = () => { setPending({}); setError(null); };
 
 	return {
 		vars,
 		pending,
+		error,
+		setError,
 		handleVars,
 		handleChange,
 		apply,
