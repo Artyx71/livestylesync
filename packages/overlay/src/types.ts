@@ -26,3 +26,16 @@ export interface RawRule {
 	mediaQuery?: string;
 	style: CSSStyleDeclaration;
 }
+
+export type LogEntry = {
+	fileUrl: string;
+	selector: string;
+	prop: string;
+	value: string;
+	oldValue: string;
+	mediaQuery?: string;
+	timestamp: number;
+	isScssVar?: boolean;
+};
+
+export type LogBatch = { id: number; entries: LogEntry[] };
