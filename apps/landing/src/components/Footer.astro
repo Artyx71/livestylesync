@@ -1,0 +1,183 @@
+---
+const gh = "https://github.com/Artyx71/livestylesync";
+const npm = "https://www.npmjs.com/package/livestylesync-overlay";
+const pkgs = [
+	{ name: "livestylesync-overlay", href: "https://www.npmjs.com/package/livestylesync-overlay" },
+	{ name: "livestylesync-vite-plugin", href: "https://www.npmjs.com/package/livestylesync-vite-plugin" },
+	{ name: "livestylesync-nextjs", href: "https://www.npmjs.com/package/livestylesync-nextjs" },
+	{ name: "livestylesync-server-core", href: "https://www.npmjs.com/package/livestylesync-server-core" },
+];
+---
+
+<footer class="footer">
+	<div class="footer-inner">
+		<div class="footer-top">
+			<div class="footer-brand">
+				<span class="brand-dot"></span>
+				<span class="brand-name">LiveStyleSync</span>
+				<span class="brand-version">v0.3.5</span>
+			</div>
+			<p class="footer-tagline">
+				Edit styles in the browser. Save to source. Ship faster.
+			</p>
+		</div>
+
+		<div class="footer-mid">
+			<div class="footer-col">
+				<div class="col-label">Packages</div>
+				{
+					pkgs.map((p) => (
+						<a href={p.href} target="_blank" rel="noopener" class="pkg-link">
+							{p.name}
+						</a>
+					))
+				}
+			</div>
+			<div class="footer-col">
+				<div class="col-label">Links</div>
+				<a href={gh} target="_blank" rel="noopener" class="pkg-link">GitHub</a>
+				<a href={`${gh}/issues`} target="_blank" rel="noopener" class="pkg-link">Issues</a>
+				<a href={`${gh}/releases`} target="_blank" rel="noopener" class="pkg-link">Releases</a>
+			</div>
+			<div class="footer-col">
+				<div class="col-label">Stack</div>
+				<span class="stack-item">Preact (bundled)</span>
+				<span class="stack-item">WebSocket (ws)</span>
+				<span class="stack-item">PostCSS</span>
+				<span class="stack-item">TypeScript</span>
+			</div>
+		</div>
+
+		<div class="footer-bottom">
+			<span class="license">MIT License</span>
+			<span class="sep">·</span>
+			<span class="copy">No peer dependencies in the overlay</span>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		border-top: 1px solid var(--border);
+		padding: 64px 48px 40px;
+		position: relative;
+	}
+
+	.footer::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 400px;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--purple-dim), transparent);
+	}
+
+	.footer-inner {
+		max-width: 960px;
+		margin: 0 auto;
+	}
+
+	.footer-top {
+		margin-bottom: 48px;
+	}
+
+	.footer-brand {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 12px;
+	}
+
+	.brand-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--purple);
+	}
+
+	.brand-name {
+		font-family: var(--mono);
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--text);
+	}
+
+	.brand-version {
+		font-family: var(--mono);
+		font-size: 11px;
+		color: var(--muted);
+	}
+
+	.footer-tagline {
+		font-size: 14px;
+		color: var(--muted);
+		font-weight: 300;
+	}
+
+	.footer-mid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 32px;
+		margin-bottom: 48px;
+	}
+
+	.footer-col {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.col-label {
+		font-family: var(--mono);
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--muted);
+		margin-bottom: 4px;
+	}
+
+	.pkg-link {
+		font-family: var(--mono);
+		font-size: 12px;
+		color: var(--text2);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.pkg-link:hover {
+		color: var(--purple-lt);
+	}
+
+	.stack-item {
+		font-family: var(--mono);
+		font-size: 12px;
+		color: var(--muted);
+	}
+
+	.footer-bottom {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-family: var(--mono);
+		font-size: 11px;
+		color: var(--muted);
+		border-top: 1px solid var(--border);
+		padding-top: 24px;
+	}
+
+	.sep {
+		opacity: 0.4;
+	}
+
+	@media (max-width: 768px) {
+		.footer {
+			padding: 48px 24px 32px;
+		}
+
+		.footer-mid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+</style>

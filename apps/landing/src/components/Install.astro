@@ -1,0 +1,329 @@
+---
+import { Code } from "astro:components";
+
+const viteConfig = `// vite.config.ts
+import { liveStyleSync } from "livestylesync-vite-plugin";
+
+export default defineConfig({
+  plugins: [liveStyleSync()],
+});`;
+
+const viteOverlay = `// src/main.tsx
+import { mount } from "livestylesync-overlay";
+
+if (import.meta.env.DEV) {
+  mount();
+}`;
+
+const nextConfig = `// next.config.ts
+import { withLiveStyleSync } from "livestylesync-nextjs";
+
+export default withLiveStyleSync({
+  // ...your existing Next.js config
+});`;
+
+const nextOverlay = `// app/layout.tsx
+import { Overlay } from "livestylesync-overlay";
+
+export default function RootLayout({ children }) {
+  return (
+    <html><body>
+      {children}
+      {process.env.NODE_ENV === "development" && <Overlay />}
+    </body></html>
+  );
+}`;
+
+const vueConfig = `// vite.config.ts
+import { liveStyleSync } from "livestylesync-vite-plugin";
+import vue from "@vitejs/plugin-vue";
+
+export default defineConfig({
+  plugins: [vue(), liveStyleSync()],
+});`;
+
+const nuxtConfig = `// nuxt.config.ts
+export default defineNuxtConfig({
+  vite: { plugins: [liveStyleSync()] },
+});
+
+// plugins/lss.client.ts
+export default defineNuxtPlugin(() => {
+  if (import.meta.dev) {
+    import("livestylesync-overlay").then(({ mount }) => mount());
+  }
+});`;
+
+const tabs = [
+	{ id: "vite", label: "Vite / React" },
+	{ id: "next", label: "Next.js" },
+	{ id: "vue", label: "Vue 3" },
+	{ id: "nuxt", label: "Nuxt 3" },
+];
+---
+
+<section class="install" id="setup">
+	<div class="install-inner">
+		<div class="section-label">Setup</div>
+		<h2 class="section-heading">Up in 2 minutes.</h2>
+
+		<div class="tabs-bar">
+			{
+				tabs.map((t, i) => (
+					<button class={`tab ${i === 0 ? "tab--active" : ""}`} data-tab={t.id}>
+						{t.label}
+					</button>
+				))
+			}
+		</div>
+
+		<div class="tab-panels">
+			<div class="tab-panel tab-panel--active" data-panel="vite">
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body">
+						<div class="step-label">Install</div>
+						<div class="code-block">
+							<code class="mono">npm i livestylesync-overlay livestylesync-vite-plugin</code>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body">
+						<div class="step-label">Add to vite.config.ts</div>
+						<Code code={viteConfig} lang="ts" theme="github-dark" />
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body">
+						<div class="step-label">Mount the overlay</div>
+						<Code code={viteOverlay} lang="tsx" theme="github-dark" />
+					</div>
+				</div>
+			</div>
+
+			<div class="tab-panel" data-panel="next">
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body">
+						<div class="step-label">Install</div>
+						<div class="code-block">
+							<code class="mono">npm i livestylesync-overlay livestylesync-nextjs</code>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body">
+						<div class="step-label">Wrap next.config.ts</div>
+						<Code code={nextConfig} lang="ts" theme="github-dark" />
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">3</span>
+					<div class="step-body">
+						<div class="step-label">Add overlay to layout</div>
+						<Code code={nextOverlay} lang="tsx" theme="github-dark" />
+					</div>
+				</div>
+			</div>
+
+			<div class="tab-panel" data-panel="vue">
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body">
+						<div class="step-label">Install</div>
+						<div class="code-block">
+							<code class="mono">npm i livestylesync-overlay livestylesync-vite-plugin</code>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body">
+						<div class="step-label">Add to vite.config.ts</div>
+						<Code code={vueConfig} lang="ts" theme="github-dark" />
+					</div>
+				</div>
+			</div>
+
+			<div class="tab-panel" data-panel="nuxt">
+				<div class="step">
+					<span class="step-num">1</span>
+					<div class="step-body">
+						<div class="step-label">Install</div>
+						<div class="code-block">
+							<code class="mono">npm i livestylesync-overlay livestylesync-vite-plugin</code>
+						</div>
+					</div>
+				</div>
+				<div class="step">
+					<span class="step-num">2</span>
+					<div class="step-body">
+						<div class="step-label">nuxt.config.ts + plugin</div>
+						<Code code={nuxtConfig} lang="ts" theme="github-dark" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	const tabs = document.querySelectorAll<HTMLButtonElement>(".tab");
+	const panels = document.querySelectorAll<HTMLElement>(".tab-panel");
+
+	tabs.forEach((tab) => {
+		tab.addEventListener("click", () => {
+			const target = tab.dataset.tab;
+			tabs.forEach((t) => t.classList.remove("tab--active"));
+			panels.forEach((p) => p.classList.remove("tab-panel--active"));
+			tab.classList.add("tab--active");
+			document.querySelector(`[data-panel="${target}"]`)?.classList.add("tab-panel--active");
+		});
+	});
+</script>
+
+<style>
+	.install {
+		padding: 100px 48px;
+		border-top: 1px solid var(--border);
+	}
+
+	.install-inner {
+		max-width: 720px;
+		margin: 0 auto;
+	}
+
+	.section-label {
+		font-family: var(--mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--purple-lt);
+		margin-bottom: 16px;
+	}
+
+	.section-heading {
+		font-family: var(--display);
+		font-size: clamp(2rem, 4vw, 3rem);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--text);
+		margin-bottom: 36px;
+	}
+
+	/* Tabs */
+	.tabs-bar {
+		display: flex;
+		gap: 2px;
+		border-bottom: 1px solid var(--border2);
+		margin-bottom: 32px;
+	}
+
+	.tab {
+		font-family: var(--mono);
+		font-size: 12px;
+		padding: 8px 16px;
+		background: transparent;
+		color: var(--muted);
+		border: none;
+		border-bottom: 2px solid transparent;
+		margin-bottom: -1px;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.tab:hover {
+		color: var(--text2);
+	}
+
+	.tab--active {
+		color: var(--purple-lt);
+		border-bottom-color: var(--purple);
+	}
+
+	/* Panels */
+	.tab-panel {
+		display: none;
+		flex-direction: column;
+		gap: 28px;
+	}
+
+	.tab-panel--active {
+		display: flex;
+	}
+
+	/* Steps */
+	.step {
+		display: flex;
+		gap: 16px;
+		align-items: flex-start;
+	}
+
+	.step-num {
+		flex-shrink: 0;
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		background: var(--purple-dim);
+		border: 1px solid rgba(124, 58, 237, 0.3);
+		color: var(--purple-lt);
+		font-family: var(--mono);
+		font-size: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-top: 2px;
+	}
+
+	.step-body {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.step-label {
+		font-size: 12px;
+		color: var(--muted);
+		margin-bottom: 8px;
+		font-family: var(--mono);
+	}
+
+	/* Plain code block (for install commands) */
+	.code-block {
+		background: var(--surface2);
+		border: 1px solid var(--border2);
+		border-radius: var(--radius);
+		padding: 12px 16px;
+	}
+
+	.mono {
+		font-family: var(--mono);
+		font-size: 12px;
+		color: var(--purple-lt);
+	}
+
+	/* Shiki code blocks */
+	:global(.tab-panel .astro-code) {
+		border-radius: var(--radius) !important;
+		border: 1px solid var(--border2) !important;
+		font-family: var(--mono) !important;
+		font-size: 12px !important;
+		padding: 16px !important;
+		margin: 0 !important;
+		background: #0d1117 !important;
+		overflow-x: auto;
+	}
+
+	@media (max-width: 768px) {
+		.install {
+			padding: 64px 24px;
+		}
+
+		.tabs-bar {
+			flex-wrap: wrap;
+		}
+	}
+</style>

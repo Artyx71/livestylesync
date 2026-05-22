@@ -1,0 +1,636 @@
+---
+const gh = "https://github.com/Artyx71/livestylesync";
+const npm = "https://www.npmjs.com/package/livestylesync-overlay";
+---
+
+<section class="hero">
+	<!-- Navbar -->
+	<nav class="nav">
+		<span class="nav-logo">
+			<span class="nav-dot"></span>
+			LiveStyleSync
+		</span>
+		<div class="nav-links">
+			<a href={gh} target="_blank" rel="noopener" class="nav-link">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+					<path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+				</svg>
+				GitHub
+			</a>
+			<a href={npm} target="_blank" rel="noopener" class="nav-link nav-link--npm">npm</a>
+		</div>
+	</nav>
+
+	<!-- Main hero content -->
+	<div class="hero-body">
+		<div class="hero-text">
+			<div class="hero-badge">v0.3.5 — Now with Next.js support</div>
+
+			<h1 class="hero-heading">
+				Edit styles.<br />
+				Ship faster.
+			</h1>
+
+			<p class="hero-sub">
+				Click any element — tweak in the panel — changes land directly in your
+				source files. No copy-pasting between DevTools and your editor.
+			</p>
+
+			<div class="install-block">
+				<div class="install-tabs">
+					<button class="itab itab--active" data-pkg="vite">Vite</button>
+					<button class="itab" data-pkg="next">Next.js</button>
+				</div>
+				<div class="install-cmd" id="install-cmd-vite">
+					<code class="install-code">npm i livestylesync-overlay livestylesync-vite-plugin</code>
+					<button class="copy-btn" data-copy="npm i livestylesync-overlay livestylesync-vite-plugin" aria-label="Copy">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="9" y="9" width="13" height="13" rx="2"/>
+							<path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+						</svg>
+					</button>
+				</div>
+				<div class="install-cmd" id="install-cmd-next" hidden>
+					<code class="install-code">npm i livestylesync-overlay livestylesync-nextjs</code>
+					<button class="copy-btn" data-copy="npm i livestylesync-overlay livestylesync-nextjs" aria-label="Copy">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="9" y="9" width="13" height="13" rx="2"/>
+							<path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+						</svg>
+					</button>
+				</div>
+			</div>
+
+			<div class="hero-cta">
+				<a href={gh} class="btn btn--primary" target="_blank" rel="noopener">View on GitHub</a>
+				<a href="#setup" class="btn btn--ghost">Quick setup →</a>
+			</div>
+		</div>
+
+		<!-- Animated overlay preview -->
+		<div class="preview">
+			<div class="preview-panel">
+				<div class="panel-header">
+					<span class="panel-title">LiveStyleSync</span>
+					<span class="panel-status" title="connected"></span>
+				</div>
+
+				<div class="panel-picker">↖ Select Element</div>
+
+				<div class="panel-breadcrumb">
+					<span class="bc-parent">section.hero</span>
+					<span class="bc-sep">›</span>
+					<span class="bc-current">h1</span>
+				</div>
+
+				<div class="panel-tabs">
+					<span class="ptab ptab--active">default</span>
+					<span class="ptab">:hover</span>
+					<span class="ptab">@media</span>
+				</div>
+
+				<div class="panel-rows">
+					<div class="prop-row">
+						<span class="prop-name">font-size</span>
+						<span class="prop-val">4.5rem</span>
+					</div>
+					<div class="prop-row prop-row--active">
+						<span class="prop-name">color</span>
+						<span class="prop-val-wrap">
+							<span class="color-swatch"></span>
+							<span class="prop-val-before">#e2e8f0</span>
+							<span class="prop-val-after">#7c3aed</span>
+						</span>
+					</div>
+					<div class="prop-row">
+						<span class="prop-name">font-weight</span>
+						<span class="prop-val">800</span>
+					</div>
+				</div>
+
+				<div class="panel-apply">✓ Apply 1 change to file</div>
+			</div>
+
+			<div class="preview-toast">✓ Saved</div>
+
+			<div class="preview-glow"></div>
+		</div>
+	</div>
+
+	<!-- Background grid -->
+	<div class="hero-grid" aria-hidden="true"></div>
+</section>
+
+<script>
+	// Install tabs
+	const tabs = document.querySelectorAll<HTMLButtonElement>(".itab");
+	tabs.forEach((tab) => {
+		tab.addEventListener("click", () => {
+			tabs.forEach((t) => t.classList.remove("itab--active"));
+			tab.classList.add("itab--active");
+			const pkg = tab.dataset.pkg;
+			document.querySelectorAll("[id^='install-cmd-']").forEach((el) => {
+				(el as HTMLElement).hidden = true;
+			});
+			const target = document.getElementById(`install-cmd-${pkg}`);
+			if (target) target.hidden = false;
+		});
+	});
+
+	// Copy buttons
+	document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
+		btn.addEventListener("click", () => {
+			const text = btn.dataset.copy ?? "";
+			navigator.clipboard.writeText(text).then(() => {
+				btn.classList.add("copied");
+				setTimeout(() => btn.classList.remove("copied"), 1800);
+			});
+		});
+	});
+</script>
+
+<style>
+	/* ── Nav ─────────────────────────────────── */
+	.nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 20px 48px;
+		position: relative;
+		z-index: 10;
+	}
+
+	.nav-logo {
+		font-family: var(--mono);
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--text);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.nav-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--purple);
+		box-shadow: 0 0 8px var(--purple);
+	}
+
+	.nav-links {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.nav-link {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 12px;
+		border-radius: 6px;
+		font-size: 13px;
+		color: var(--text2);
+		text-decoration: none;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.nav-link:hover {
+		color: var(--text);
+		background: var(--surface);
+	}
+
+	.nav-link--npm {
+		font-family: var(--mono);
+		font-size: 12px;
+		font-weight: 500;
+		color: var(--amber);
+		border: 1px solid rgba(245, 158, 11, 0.2);
+	}
+
+	.nav-link--npm:hover {
+		background: rgba(245, 158, 11, 0.08);
+		color: var(--amber);
+	}
+
+	/* ── Hero layout ─────────────────────────── */
+	.hero {
+		position: relative;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.hero-body {
+		flex: 1;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 64px;
+		align-items: center;
+		padding: 48px 48px 80px;
+		position: relative;
+		z-index: 2;
+	}
+
+	.hero-grid {
+		position: absolute;
+		inset: 0;
+		background-image:
+			linear-gradient(var(--border) 1px, transparent 1px),
+			linear-gradient(90deg, var(--border) 1px, transparent 1px);
+		background-size: 48px 48px;
+		mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, black, transparent);
+		opacity: 0.4;
+	}
+
+	/* ── Text side ───────────────────────────── */
+	.hero-badge {
+		display: inline-block;
+		font-family: var(--mono);
+		font-size: 11px;
+		color: var(--green);
+		background: var(--green-dim);
+		border: 1px solid rgba(16, 185, 129, 0.2);
+		padding: 3px 10px;
+		border-radius: 20px;
+		margin-bottom: 24px;
+		animation: fadeUp 0.6s ease both;
+	}
+
+	.hero-heading {
+		font-family: var(--display);
+		font-size: clamp(3rem, 5vw, 5.5rem);
+		font-weight: 800;
+		line-height: 1.05;
+		letter-spacing: -0.03em;
+		color: var(--text);
+		margin-bottom: 24px;
+		animation: fadeUp 0.6s 0.1s ease both;
+	}
+
+	.hero-sub {
+		font-size: 17px;
+		font-weight: 300;
+		color: var(--text2);
+		line-height: 1.65;
+		max-width: 420px;
+		margin-bottom: 36px;
+		animation: fadeUp 0.6s 0.2s ease both;
+	}
+
+	/* ── Install block ───────────────────────── */
+	.install-block {
+		margin-bottom: 32px;
+		animation: fadeUp 0.6s 0.3s ease both;
+	}
+
+	.install-tabs {
+		display: flex;
+		gap: 2px;
+		margin-bottom: 8px;
+	}
+
+	.itab {
+		font-family: var(--mono);
+		font-size: 11px;
+		padding: 4px 10px;
+		border-radius: 4px 4px 0 0;
+		border: 1px solid var(--border2);
+		border-bottom: none;
+		background: var(--surface);
+		color: var(--muted);
+		cursor: pointer;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.itab--active {
+		background: var(--surface2);
+		color: var(--purple-lt);
+		border-color: var(--border2);
+	}
+
+	.install-cmd {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		background: var(--surface2);
+		border: 1px solid var(--border2);
+		border-radius: 0 6px 6px 6px;
+		padding: 12px 14px;
+	}
+
+	.install-code {
+		font-family: var(--mono);
+		font-size: 12px;
+		color: var(--purple-lt);
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.copy-btn {
+		flex-shrink: 0;
+		background: transparent;
+		border: 1px solid var(--border2);
+		border-radius: 4px;
+		color: var(--muted);
+		padding: 4px 6px;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s, background 0.15s;
+		display: flex;
+		align-items: center;
+	}
+
+	.copy-btn:hover {
+		color: var(--text);
+		border-color: var(--border2);
+		background: var(--surface);
+	}
+
+	.copy-btn.copied {
+		color: var(--green);
+		border-color: rgba(16, 185, 129, 0.4);
+	}
+
+	/* ── CTA buttons ─────────────────────────── */
+	.hero-cta {
+		display: flex;
+		gap: 12px;
+		animation: fadeUp 0.6s 0.4s ease both;
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		padding: 10px 20px;
+		border-radius: var(--radius);
+		font-size: 14px;
+		font-weight: 500;
+		text-decoration: none;
+		transition: all 0.15s;
+		cursor: pointer;
+		border: none;
+	}
+
+	.btn--primary {
+		background: var(--purple);
+		color: #fff;
+		box-shadow: 0 0 20px var(--purple-glow);
+	}
+
+	.btn--primary:hover {
+		background: #6d28d9;
+		box-shadow: 0 0 28px var(--purple-glow);
+		transform: translateY(-1px);
+	}
+
+	.btn--ghost {
+		background: transparent;
+		color: var(--text2);
+		border: 1px solid var(--border2);
+	}
+
+	.btn--ghost:hover {
+		color: var(--text);
+		border-color: var(--muted);
+		background: var(--surface);
+	}
+
+	/* ── Animated overlay preview ────────────── */
+	.preview {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		animation: fadeIn 0.8s 0.3s ease both;
+	}
+
+	.preview-glow {
+		position: absolute;
+		inset: -60px;
+		background: radial-gradient(ellipse at center, var(--purple-glow) 0%, transparent 70%);
+		pointer-events: none;
+		z-index: -1;
+	}
+
+	.preview-panel {
+		width: 280px;
+		background: var(--surface2);
+		border: 1px solid var(--border2);
+		border-radius: 10px;
+		font-family: var(--mono);
+		font-size: 11px;
+		overflow: hidden;
+		box-shadow:
+			0 32px 64px rgba(0, 0, 0, 0.5),
+			0 0 0 1px rgba(124, 58, 237, 0.1);
+	}
+
+	.panel-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--border);
+		background: rgba(10, 10, 20, 0.5);
+	}
+
+	.panel-title {
+		font-size: 12px;
+		color: var(--text);
+		font-weight: 500;
+	}
+
+	.panel-status {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--green);
+		box-shadow: 0 0 6px var(--green);
+	}
+
+	.panel-picker {
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--border);
+		color: var(--text2);
+		font-size: 11px;
+	}
+
+	.panel-breadcrumb {
+		padding: 6px 12px;
+		border-bottom: 1px solid var(--border);
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 10px;
+	}
+
+	.bc-parent {
+		color: var(--muted);
+	}
+
+	.bc-sep {
+		color: var(--border2);
+	}
+
+	.bc-current {
+		color: var(--purple-lt);
+	}
+
+	.panel-tabs {
+		display: flex;
+		gap: 0;
+		border-bottom: 1px solid var(--border);
+		padding: 0 12px;
+	}
+
+	.ptab {
+		padding: 6px 10px;
+		font-size: 10px;
+		color: var(--muted);
+		cursor: pointer;
+		border-bottom: 1px solid transparent;
+		margin-bottom: -1px;
+	}
+
+	.ptab--active {
+		color: var(--purple-lt);
+		border-bottom-color: var(--purple);
+	}
+
+	.panel-rows {
+		padding: 8px 0;
+	}
+
+	.prop-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 4px 12px;
+		font-size: 10px;
+	}
+
+	.prop-row--active {
+		background: var(--purple-dim);
+	}
+
+	.prop-name {
+		color: var(--text2);
+	}
+
+	.prop-val {
+		color: var(--text);
+	}
+
+	.prop-val-wrap {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		position: relative;
+	}
+
+	/* Color swatch animates */
+	.color-swatch {
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		animation: swatchCycle 4s 1s infinite;
+	}
+
+	/* Text values toggle */
+	.prop-val-before {
+		color: var(--text);
+		position: absolute;
+		left: 15px;
+		animation: valBefore 4s 1s infinite;
+	}
+
+	.prop-val-after {
+		color: var(--purple-lt);
+		margin-left: 15px;
+		animation: valAfter 4s 1s infinite;
+	}
+
+	@keyframes swatchCycle {
+		0%, 25% { background: #e2e8f0; }
+		40%, 80% { background: #7c3aed; }
+		95%, 100% { background: #e2e8f0; }
+	}
+
+	@keyframes valBefore {
+		0%, 25% { opacity: 1; }
+		35%, 100% { opacity: 0; }
+	}
+
+	@keyframes valAfter {
+		0%, 30% { opacity: 0; }
+		40%, 80% { opacity: 1; }
+		90%, 100% { opacity: 0; }
+	}
+
+	/* Apply button pulses at right time */
+	.panel-apply {
+		margin: 8px 12px 12px;
+		padding: 7px 0;
+		background: #065f46;
+		color: #6ee7b7;
+		border: 1px solid #059669;
+		border-radius: 6px;
+		text-align: center;
+		font-size: 10px;
+		animation: applyPulse 4s 1s infinite;
+		cursor: pointer;
+	}
+
+	@keyframes applyPulse {
+		0%, 35% { background: #065f46; border-color: #059669; box-shadow: none; }
+		45%, 55% { background: #047857; border-color: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+		65%, 100% { background: #065f46; border-color: #059669; box-shadow: none; }
+	}
+
+	/* Toast */
+	.preview-toast {
+		position: absolute;
+		bottom: -44px;
+		right: 0;
+		background: #065f46;
+		color: #6ee7b7;
+		border: 1px solid #059669;
+		border-radius: 6px;
+		padding: 4px 10px;
+		font-family: var(--mono);
+		font-size: 11px;
+		opacity: 0;
+		animation: toastCycle 4s 1s infinite;
+		pointer-events: none;
+	}
+
+	@keyframes toastCycle {
+		0%, 50% { opacity: 0; transform: translateY(4px); }
+		60%, 80% { opacity: 1; transform: translateY(0); }
+		90%, 100% { opacity: 0; transform: translateY(-2px); }
+	}
+
+	/* ── Responsive ──────────────────────────── */
+	@media (max-width: 900px) {
+		.hero-body {
+			grid-template-columns: 1fr;
+			padding: 32px 24px 64px;
+			gap: 48px;
+		}
+
+		.nav {
+			padding: 16px 24px;
+		}
+
+		.preview {
+			order: -1;
+		}
+
+		.preview-panel {
+			width: 240px;
+		}
+	}
+</style>

@@ -1,0 +1,117 @@
+---
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "LiveStyleSync — Edit styles. Ship faster.",
+	description = "Click any element, tweak in the panel, changes go straight to your source files. A browser overlay for Vite, Next.js, Vue, Nuxt and more.",
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+
+	:root {
+		--bg: #080810;
+		--surface: #0f0f1c;
+		--surface2: #1a1a2e;
+		--border: #1e1e38;
+		--border2: #2d2d4e;
+		--purple: #7c3aed;
+		--purple-lt: #a78bfa;
+		--purple-dim: rgba(124, 58, 237, 0.12);
+		--purple-glow: rgba(124, 58, 237, 0.25);
+		--green: #10b981;
+		--green-dim: rgba(16, 185, 129, 0.12);
+		--amber: #f59e0b;
+		--text: #e2e8f0;
+		--text2: #94a3b8;
+		--muted: #475569;
+		--mono: "JetBrains Mono", "Courier New", monospace;
+		--sans: "DM Sans", system-ui, sans-serif;
+		--display: "Bricolage Grotesque", system-ui, sans-serif;
+		--radius: 8px;
+	}
+
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background: var(--bg);
+		color: var(--text);
+		font-family: var(--sans);
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+		overflow-x: hidden;
+	}
+
+	::selection {
+		background: var(--purple-dim);
+		color: var(--purple-lt);
+	}
+
+	::-webkit-scrollbar {
+		width: 5px;
+	}
+	::-webkit-scrollbar-track {
+		background: var(--bg);
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--border2);
+		border-radius: 3px;
+	}
+
+	@keyframes fadeUp {
+		from {
+			opacity: 0;
+			transform: translateY(16px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+</style>
