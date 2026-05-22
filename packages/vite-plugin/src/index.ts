@@ -1,5 +1,5 @@
 import type { Plugin } from "vite";
-import { startWss } from "./server";
+import { startWss } from "livestylesync-server-core";
 
 interface LiveStyleSyncOptions {
 	port?: number;
@@ -12,7 +12,7 @@ export function liveStyleSync(options: LiveStyleSyncOptions = {}): Plugin {
 		name: "livestylesync",
 
 		configureServer(server) {
-			startWss(server, port);
+			startWss(server.config.root, server.httpServer, port);
 		},
 	};
 }

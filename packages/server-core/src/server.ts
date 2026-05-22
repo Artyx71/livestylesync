@@ -1,5 +1,8 @@
 import { WebSocketServer } from "ws";
-import type { ViteDevServer } from "vite";
+
+interface CloseEmitter {
+	once(event: "close", listener: () => void): unknown;
+}
 import { readdirSync, statSync } from "fs";
 import { join } from "path";
 import { patchCss } from "./patchers/css";
@@ -7,6 +10,7 @@ import { patchScss } from "./patchers/scss";
 import { patchVue } from "./patchers/vue";
 import { createRule } from "./patchers/create";
 import { scanScssVars, patchScssVar } from "./patchers/scss-vars";
+import type { ScssVarDef } from "./patchers/scss-vars";
 
 const CSS_EXTS = new Set([".css", ".scss", ".vue"]);
 const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", ".nuxt", ".next", "out"]);
@@ -28,15 +32,15 @@ function findCssFiles(root: string, files: string[] = []): string[] {
 	return files;
 }
 
-export function startWss(server: ViteDevServer, port: number) {
+export function startWss(root: string, httpServer: CloseEmitter | null, port: number) {
 	const wss = new WebSocketServer({ port });
 
 	wss.on("error", (err: NodeJS.ErrnoException) => {
 		if (err.code !== "EADDRINUSE") throw err;
-		console.log(`[LSS] port ${port} busy — restart Vite to reconnect`);
+		console.log(`[LSS] port ${port} busy — restart to reconnect`);
 	});
 
-	server.httpServer?.once("close", () => wss.close());
+	httpServer?.once("close", () => wss.close());
 
 	wss.on("connection", (socket) => {
 		console.log("[LSS] client connected");
@@ -49,24 +53,19 @@ export function startWss(server: ViteDevServer, port: number) {
 				return;
 			}
 
-			// list available CSS files
 			if (msg.type === "list-files") {
-				const root = server.config.root;
 				const files = findCssFiles(root);
 				socket.send(JSON.stringify({ type: "files", files }));
 				return;
 			}
 
-			// list SCSS variables from all .scss files
 			if (msg.type === "list-scss-vars") {
-				const root = server.config.root;
 				const scssFiles = findCssFiles(root).filter((f) => f.endsWith(".scss"));
-				const vars = scssFiles.flatMap((f) => scanScssVars(f));
+				const vars: ScssVarDef[] = scssFiles.flatMap((f) => scanScssVars(f));
 				socket.send(JSON.stringify({ type: "scss-vars", vars }));
 				return;
 			}
 
-			// patch a single SCSS variable value
 			if (msg.type === "patch-scss-var") {
 				const { fileUrl, name, value } = msg;
 				if (!fileUrl || !name || value == null) return;
@@ -84,14 +83,12 @@ export function startWss(server: ViteDevServer, port: number) {
 				return;
 			}
 
-			// create new CSS rule in a file
 			if (msg.type === "create-rule") {
 				const { fileUrl, selector, prop, value } = msg;
 				if (!fileUrl || !selector || !prop || !value) return;
 				try {
 					createRule(fileUrl, selector, prop, value);
 				} catch (err) {
-					console.error("[LSS] create error:", err);
 					const message = err instanceof Error ? err.message : String(err);
 					socket.send(JSON.stringify({ type: "error", message }));
 				}
@@ -117,7 +114,6 @@ export function startWss(server: ViteDevServer, port: number) {
 					socket.send(JSON.stringify({ type: "patched" }));
 				}
 			} catch (err) {
-				console.error("[LSS] patch error:", err);
 				const message = err instanceof Error ? err.message : String(err);
 				socket.send(JSON.stringify({ type: "error", message }));
 			}
