@@ -20,6 +20,38 @@ const propLabel: React.CSSProperties = {
 	whiteSpace: "nowrap",
 };
 
+function nudgeNumber(value: string, delta: number, cursorPos: number): string {
+	const numRegex = /-?\d*\.?\d+/g;
+	let match: RegExpExecArray | null;
+	let target: RegExpExecArray | null = null;
+
+	// prefer number under cursor
+	while ((match = numRegex.exec(value)) !== null) {
+		if (cursorPos >= match.index && cursorPos <= match.index + match[0].length) {
+			target = match;
+			break;
+		}
+	}
+
+	// fallback: last number in string
+	if (!target) {
+		numRegex.lastIndex = 0;
+		while ((match = numRegex.exec(value)) !== null) target = match;
+	}
+
+	if (!target) return value;
+
+	const num = parseFloat(target[0]);
+	if (isNaN(num)) return value;
+
+	const currentDecimals = (target[0].split(".")[1] ?? "").length;
+	const deltaDecimals = delta % 1 !== 0 ? (String(Math.abs(delta)).split(".")[1]?.length ?? 1) : 0;
+	const precision = Math.max(currentDecimals, deltaDecimals);
+	const newNum = parseFloat((num + delta).toFixed(precision));
+
+	return value.slice(0, target.index) + newNum + value.slice(target.index + target[0].length);
+}
+
 export function StyleRows({ styles, pending, onChange }: Props) {
 	if (Object.keys(styles).length === 0) return null;
 
@@ -41,6 +73,15 @@ export function StyleRows({ styles, pending, onChange }: Props) {
 						}}
 						value={value}
 						onChange={(e) => onChange(prop, e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+							e.preventDefault();
+							const dir = e.key === "ArrowUp" ? 1 : -1;
+							const delta = e.shiftKey ? 10 * dir : e.altKey ? 0.1 * dir : dir;
+							const cursor = (e.target as HTMLInputElement).selectionStart ?? value.length;
+							const next = nudgeNumber(value, delta, cursor);
+							if (next !== value) onChange(prop, next);
+						}}
 					/>
 				</div>
 			))}
