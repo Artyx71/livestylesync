@@ -13,9 +13,10 @@ interface StyleEditorProps {
 	hasBatches: boolean;
 	onApply: () => void;
 	onUndo: () => void;
+	editorUrl?: string | null;
 }
 
-export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onApply, onUndo }: StyleEditorProps) {
+export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onApply, onUndo, editorUrl }: StyleEditorProps) {
 	const hasSource = editor.ruleGroups.length > 0;
 
 	return (
@@ -185,6 +186,15 @@ export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onA
 				<p style={{ margin: "6px 0 0", fontSize: 10, color: "#f87171", wordBreak: "break-word" }}>
 					✗ {editor.serverError}
 				</p>
+			)}
+
+			{editorUrl && (
+				<a
+					href={editorUrl}
+					style={{ display: "block", marginTop: 6, fontSize: 10, color: "#a78bfa", textDecoration: "none", fontFamily: "monospace" }}
+				>
+					↗ Open in editor
+				</a>
 			)}
 		</>
 	);

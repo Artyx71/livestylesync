@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import postcss from "postcss";
 import { camelToKebab } from "./utils";
 
-export function patchCss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): boolean {
+export function patchCss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): { patched: boolean; line?: number } {
 	const cssProp = camelToKebab(prop);
 	const src = readFileSync(filePath, "utf-8");
 	const root = postcss.parse(src);
@@ -10,6 +10,7 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 	const normalizedMedia = mediaQuery?.replace(/\s+/g, " ").trim();
 
 	let found = false;
+	let foundLine: number | undefined;
 
 	const isContainer = normalizedMedia?.startsWith("@container") ?? false;
 	const atRuleName = isContainer ? "container" : "media";
@@ -50,6 +51,7 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 		if (!propFound) {
 			rule.append(new postcss.Declaration({ prop: cssProp, value }));
 		}
+		foundLine = rule.source?.start?.line;
 		found = true;
 	});
 
@@ -81,6 +83,7 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 				if (!propFound) {
 					atRule.append(new postcss.Declaration({ prop: cssProp, value }));
 				}
+				foundLine = rule.source?.start?.line;
 				found = true;
 			});
 		});
@@ -88,10 +91,10 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 
 	if (!found) {
 		console.log("[LSS] selector not found in CSS, skipping");
-		return false;
+		return { patched: false };
 	}
 
 	writeFileSync(filePath, root.toString(), "utf-8");
 	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath}`);
-	return true;
+	return { patched: true, line: foundLine };
 }

@@ -29,7 +29,7 @@ function resolveRuleSelector(rule: postcss.Rule): string {
 	return selectors.join(", ");
 }
 
-export function patchScss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): boolean {
+export function patchScss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): { patched: boolean; line?: number } {
 	const cssProp = camelToKebab(prop);
 	const src = readFileSync(filePath, "utf-8");
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,6 +39,7 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 	const normalizedMedia = mediaQuery?.replace(/\s+/g, " ").trim();
 
 	let found = false;
+	let foundLine: number | undefined;
 
 	const isContainer = normalizedMedia?.startsWith("@container") ?? false;
 	const atRuleName = isContainer ? "container" : "media";
@@ -78,6 +79,7 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 		if (!propFound) {
 			rule.append(new postcss.Declaration({ prop: cssProp, value }));
 		}
+		foundLine = rule.source?.start?.line;
 		found = true;
 	});
 
@@ -110,6 +112,7 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 				if (!propFound) {
 					atRule.append(new postcss.Declaration({ prop: cssProp, value }));
 				}
+				foundLine = rule.source?.start?.line;
 				found = true;
 			});
 		});
@@ -117,12 +120,12 @@ export function patchScss(filePath: string, selector: string, prop: string, valu
 
 	if (!found) {
 		console.log("[LSS] selector not found in SCSS");
-		return false;
+		return { patched: false };
 	}
 
 	let output = "";
 	scssParser.stringify(root, (str: string) => { output += str; });
 	writeFileSync(filePath, output, "utf-8");
 	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath} (scss)`);
-	return true;
+	return { patched: true, line: foundLine };
 }

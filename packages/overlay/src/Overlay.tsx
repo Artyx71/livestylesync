@@ -23,6 +23,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const [toast, setToast] = useState(false);
+	const [editorUrl, setEditorUrl] = useState<string | null>(null);
 	const [sessionBatches, setSessionBatches] = useState<LogBatch[]>([]);
 
 	const appliedState = useRef(new Map<string, string>());
@@ -51,6 +52,9 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		if (msg.type === "files") cr.handleFiles(msg.files as string[]);
 		if (msg.type === "scss-vars") scssVars.handleVars(msg.vars as ScssVar[]);
 		if (msg.type === "patched") {
+			const fl = msg.fileUrl as string | undefined;
+			const ln = msg.line as number | undefined;
+			if (fl && ln) setEditorUrl(`vscode://file/${fl}:${ln}`);
 			showToast();
 			if (pendingRefresh.current) {
 				pendingRefresh.current = false;
@@ -291,6 +295,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 							hasBatches={sessionBatches.length > 0}
 							onApply={handleApply}
 							onUndo={undoLastBatch}
+							editorUrl={editorUrl}
 						/>
 					)}
 

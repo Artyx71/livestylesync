@@ -100,18 +100,18 @@ export function startWss(root: string, httpServer: CloseEmitter | null, port: nu
 			const { fileUrl, selector, prop, value, mediaQuery } = msg;
 
 			try {
-				let patched: boolean;
+				let result: { patched: boolean; line?: number };
 				if (fileUrl.endsWith(".vue")) {
-					patched = patchVue(fileUrl, selector, prop, value, mediaQuery);
+					result = patchVue(fileUrl, selector, prop, value, mediaQuery);
 				} else if (fileUrl.endsWith(".scss")) {
-					patched = patchScss(fileUrl, selector, prop, value, mediaQuery);
+					result = patchScss(fileUrl, selector, prop, value, mediaQuery);
 				} else {
-					patched = patchCss(fileUrl, selector, prop, value, mediaQuery);
+					result = patchCss(fileUrl, selector, prop, value, mediaQuery);
 				}
-				if (!patched) {
+				if (!result.patched) {
 					socket.send(JSON.stringify({ type: "error", message: `Selector "${selector}" not found in source file` }));
 				} else {
-					socket.send(JSON.stringify({ type: "patched" }));
+					socket.send(JSON.stringify({ type: "patched", fileUrl, line: result.line }));
 				}
 			} catch (err) {
 				const message = err instanceof Error ? err.message : String(err);

@@ -1,14 +1,14 @@
 import { readFileSync, writeFileSync } from "fs";
 import { camelToKebab, selectorToRegex, findBlock, findMediaBlock, patchBlockContent } from "./utils";
 
-export function patchVue(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): boolean {
+export function patchVue(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): { patched: boolean; line?: number } {
 	const cssProp = camelToKebab(prop);
 	const src = readFileSync(filePath, "utf-8");
 
 	const styleMatch = /<style[^>]*scoped[^>]*>([\s\S]*?)<\/style>/m.exec(src);
 	if (!styleMatch) {
 		console.log("[LSS] no <style scoped> block found");
-		return false;
+		return { patched: false };
 	}
 
 	const styleStart = styleMatch.index + styleMatch[0].indexOf(">") + 1;
@@ -56,11 +56,11 @@ export function patchVue(filePath: string, selector: string, prop: string, value
 
 	if (!newCss) {
 		console.log("[LSS] selector not found in <style scoped>");
-		return false;
+		return { patched: false };
 	}
 
 	const updated = src.slice(0, styleStart) + newCss + src.slice(styleStart + css.length);
 	writeFileSync(filePath, updated, "utf-8");
 	console.log(`[LSS] wrote ${cssProp}: ${value} → ${filePath} (vue scoped)`);
-	return true;
+	return { patched: true };
 }
