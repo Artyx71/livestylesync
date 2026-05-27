@@ -1,7 +1,7 @@
 {
-	"name": "livestylesync-nextjs",
+	"name": "livestylesync-webpack-plugin",
 	"version": "0.1.0",
-	"description": "Next.js plugin for LiveStyleSync",
+	"description": "Webpack / Rspack plugin for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
 	"main": "dist/index.js",
@@ -17,14 +17,14 @@
 		"build": "tsup"
 	},
 	"peerDependencies": {
-		"next": ">=14.0.0"
+		"webpack": ">=5.0.0"
 	},
 	"dependencies": {
-		"livestylesync-server-core": "workspace:*",
-		"livestylesync-webpack-plugin": "workspace:*"
+		"livestylesync-server-core": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^24.12.2",
+		"@types/webpack": "^5.28.5",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3"
 	}

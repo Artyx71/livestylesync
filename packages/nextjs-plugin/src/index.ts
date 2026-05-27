@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
-import { LiveStyleSyncPlugin } from "./LiveStyleSyncPlugin";
+export { LiveStyleSyncPlugin } from "livestylesync-webpack-plugin";
+import { LiveStyleSyncPlugin } from "livestylesync-webpack-plugin";
 
 interface LiveStyleSyncOptions {
 	port?: number;
