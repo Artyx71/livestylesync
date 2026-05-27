@@ -273,6 +273,21 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 						<span title={status} style={{ width: 8, height: 8, borderRadius: "50%", background: status === "connected" ? "#10b981" : status === "reconnecting" ? "#f59e0b" : "#ef4444", flexShrink: 0 }} />
 					</div>
 
+					{status !== "connected" && (
+						<div style={{
+							margin: "0 0 8px",
+							padding: "5px 8px",
+							background: status === "reconnecting" ? "#451a03" : "#1c1917",
+							border: "1px solid " + (status === "reconnecting" ? "#92400e" : "#44403c"),
+							borderRadius: 5,
+							color: status === "reconnecting" ? "#fbbf24" : "#a8a29e",
+							fontSize: 10,
+							fontFamily: "monospace",
+						}}>
+							{status === "reconnecting" ? "⟳ Reconnecting to dev server..." : "✗ Dev server not running"}
+						</div>
+					)}
+
 					<button
 						onClick={() => setPicking((v) => !v)}
 						style={{ width: "100%", padding: "8px 0", background: picking ? "#3B82F6" : "#2d2d4e", color: "#fff", border: "1px solid " + (picking ? "#3B82F6" : "#555"), borderRadius: 6, cursor: "pointer", fontFamily: "monospace", fontSize: 12 }}
