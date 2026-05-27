@@ -78,11 +78,11 @@ importers:
   packages/livestylesync:
     dependencies:
       livestylesync-overlay:
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^1.0.0
+        version: 1.0.0
       livestylesync-vite-plugin:
-        specifier: ^0.3.4
-        version: 0.3.4(vite@8.0.11(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.99.0)(terser@5.48.0))
+        specifier: ^1.0.0
+        version: 1.0.0(vite@8.0.11(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.99.0)(terser@5.48.0))
     devDependencies:
       '@types/node':
         specifier: ^24.12.2
@@ -2356,11 +2356,11 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  livestylesync-overlay@0.6.0:
-    resolution: {integrity: sha512-mCdIrat7IlHh2PJlYI7TkY0MaZSvzOIGnmOOZO2W+n4gYaPMcEzfxJbLL7Ubhzf2ZqNcgbVQIoDX3yzkBipd+w==}
+  livestylesync-overlay@1.0.0:
+    resolution: {integrity: sha512-N/DfDihPe8VpSNATZLUyhpoROky/t5vZju2CILwqK93JGtOAjiYsQuUHNyeXcfyRTVf2hYKOfUWZ25r1Zk0Otg==}
 
-  livestylesync-vite-plugin@0.3.4:
-    resolution: {integrity: sha512-xCfqXCcRyBoqsl35ToYMPm2BQROatcel7FmzYJjmM7eJe9giXzYKU3M1y4Golv94AFlNpGKMJG5E23JP8Q43iA==}
+  livestylesync-vite-plugin@1.0.0:
+    resolution: {integrity: sha512-DguS/8zi2Wol7zDYrqT/kEeVA8yocix08oK4LopscWNX42IuOTuXh5BNySnIiRuOs0gou5W844hzYHkoyyMdOw==}
     peerDependencies:
       vite: '>=4'
 
@@ -5461,11 +5461,11 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  livestylesync-overlay@0.6.0:
+  livestylesync-overlay@1.0.0:
     dependencies:
       preact: 10.29.2
 
-  livestylesync-vite-plugin@0.3.4(vite@8.0.11(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.99.0)(terser@5.48.0)):
+  livestylesync-vite-plugin@1.0.0(vite@8.0.11(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.99.0)(terser@5.48.0)):
     dependencies:
       livestylesync-server-core: link:packages/server-core
       vite: 8.0.11(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.99.0)(terser@5.48.0)

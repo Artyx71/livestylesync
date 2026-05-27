@@ -2,6 +2,25 @@
 
 All notable changes to LiveStyleSync packages are documented here.
 
+## [1.0.0] — 2026-05-27
+
+### All packages — stable release
+
+### `livestylesync-overlay@1.0.0`
+- **feat:** Force pseudo-state preview — toggle `:hover` / `:focus` / `:active` on selected element (#50)
+- **feat:** Viewport breakpoint switcher — preset 375/768/1024px + custom width input, injects `max-width` on body (#51)
+- **feat:** WebSocket reconnect banner — visible status when dev server is unreachable (#58)
+- **docs:** Full README rewrite — all features documented (#56)
+
+### `livestylesync-vite-plugin@1.0.0`
+- **docs:** README updated with options table
+
+### `livestylesync@1.0.0`
+- **fix:** Remove incorrect "React is a peer dependency" note — Preact is bundled, no React required
+- **docs:** Full README rewrite
+
+---
+
 ## [0.4.0] — 2026-05-27
 
 ### `livestylesync-overlay@0.4.0`
