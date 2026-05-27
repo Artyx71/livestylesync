@@ -2,7 +2,7 @@
 
 Browser overlay for [LiveStyleSync](https://github.com/livestylesync/livestylesync).
 
-No React required — Preact is bundled. Works with any framework.
+No React required — Preact is bundled. Works with any Vite-based framework.
 
 ## Install
 
@@ -25,14 +25,44 @@ mount({ port: 3200 });
 
 Also add the Vite plugin → [livestylesync-vite-plugin](https://www.npmjs.com/package/livestylesync-vite-plugin)
 
+## Keyboard shortcut
+
+`Alt+S` — toggle overlay open/closed
+
 ## Features
 
-- Click any element to inspect its CSS rules
-- DOM breadcrumb path — click ancestors to switch element
-- Tabs per pseudo-state: `:hover`, `:focus`, `:active`, etc.
-- Tabs per `@media` breakpoint: `≤1024px`, `≥768px`, etc.
-- Add new properties inline
-- "Apply to file" sends changes to the Vite plugin over WebSocket
+### Element inspector
+- Click **↖ Select Element** then click any element on the page
+- DOM breadcrumb — click parent nodes to switch scope
+- Tabs per CSS rule group, `@media` query, and pseudo-state
+- Add new CSS properties inline
+- Force pseudo-state preview: `:hover` / `:focus` / `:active`
+- Detect React component name and file via `__reactFiber`
+
+### Style editing
+- Edit any CSS property — changes preview live in the browser
+- **Apply to file** — sends patch over WebSocket, writes to source file
+- Tailwind class swapper — replace one utility class with another
+- Undo last apply batch
+
+### CSS & SCSS variables
+- Browse all `:root` CSS custom properties, grouped by prefix (colors, spacing, typography…)
+- Color swatches for color values, search/filter
+- Browse and edit SCSS variables (requires vite-plugin support)
+
+### Viewport switcher
+- Preset breakpoints: 375 / 768 / 1024 px
+- Custom width input
+- Injects `max-width` on `body` — simulates narrow viewports without an iframe
+
+### Session history
+- Full log of every applied change in the current session
+- Restore any previous batch
+- Export session diff to clipboard as CSS
+
+### Connection status
+- Dot indicator: green (connected) / yellow (reconnecting) / red (disconnected)
+- Banner when server is unreachable with auto-reconnect (exponential backoff)
 
 ## Works with
 

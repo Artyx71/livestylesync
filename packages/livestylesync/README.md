@@ -8,7 +8,7 @@ Edit CSS in the browser. Changes go straight to your source files.
 npm install livestylesync
 ```
 
-> React is a peer dependency — you need it in your project.
+No React required — Preact is bundled inside the overlay.
 
 ## Setup
 
@@ -25,32 +25,41 @@ export default defineConfig({
 
 **main.tsx** (or your entry file)
 
-```tsx
+```ts
 import { mount } from "livestylesync/overlay";
-
 mount();
 ```
 
-That's it. Run `vite` and click the dot in the bottom-right corner.
+Run `vite` and press `Alt+S` (or click the dot in the bottom-right corner).
 
 ## Options
 
 ```ts
 liveStyleSync({ port: 3100 }) // default port
-mount({ port: 3100 })         // must match
+mount({ port: 3100 })         // must match plugin port
 ```
 
 ## How it works
 
-- Vite plugin starts a WebSocket server
-- Overlay runs in the browser — pick an element, edit its styles
-- Click **Apply to file** — changes write directly to your CSS source file
+- Vite plugin starts a WebSocket server alongside the dev server
+- Overlay runs in the browser — pick an element, edit its styles live
+- Click **Apply to file** — patch writes directly to your CSS/SCSS source
 - Vite HMR picks up the change instantly
+
+## Features
+
+- Element picker + DOM breadcrumb navigation
+- Force pseudo-state preview (`:hover` / `:focus` / `:active`)
+- Viewport breakpoint switcher (375 / 768 / 1024 px + custom)
+- CSS custom properties browser with color swatches and search
+- SCSS variables browser and editor
+- Tailwind utility class swapper
+- Session history with undo and diff export
+- Auto-reconnect with exponential backoff
 
 ## Requirements
 
 - Vite ≥ 4
-- React ≥ 18
 - Node.js ≥ 18
 
 ## License
