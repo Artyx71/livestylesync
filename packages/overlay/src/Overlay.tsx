@@ -11,6 +11,7 @@ import { useScssVars } from "./hooks/useScssVars";
 import { useComponentInfo } from "./hooks/useComponentInfo";
 import { useTailwindEditor } from "./hooks/useTailwindEditor";
 import { useSourceLocation } from "./hooks/useSourceLocation";
+import { useForcePseudo } from "./hooks/useForcePseudo";
 import { groupKey } from "./css";
 import { ElementSearchBar } from "./components/ElementSearchBar";
 import { CssVarsPanel } from "./components/CssVarsPanel";
@@ -73,6 +74,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const scssVars = useScssVars(send);
 	const componentInfo = useComponentInfo(selected);
 	const tw = useTailwindEditor(selected);
+	const forcePseudo = useForcePseudo(selected);
 	const sourceLocation = useSourceLocation(selected);
 
 	const showToast = () => {
@@ -307,6 +309,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 							editor={editor}
 							cr={cr}
 							tw={tw}
+							forcePseudo={forcePseudo}
 							hasBatches={sessionBatches.length > 0}
 							onApply={handleApply}
 							onUndo={undoLastBatch}

@@ -4,10 +4,12 @@ import { StyleRows } from "./StyleRows";
 import { AddPropertyRow } from "./AddPropertyRow";
 import { ComponentInfoPanel } from "./ComponentInfoPanel";
 import { TailwindPanel } from "./TailwindPanel";
+import { ForcePseudoPanel } from "./ForcePseudoPanel";
 import type { useStyleEditor } from "../hooks/useStyleEditor";
 import type { useCreateRule } from "../hooks/useCreateRule";
 import type { ComponentInfo } from "../hooks/useComponentInfo";
 import type { useTailwindEditor } from "../hooks/useTailwindEditor";
+import type { useForcePseudo } from "../hooks/useForcePseudo";
 
 interface StyleEditorProps {
 	selected: Element;
@@ -15,6 +17,7 @@ interface StyleEditorProps {
 	editor: ReturnType<typeof useStyleEditor>;
 	cr: ReturnType<typeof useCreateRule>;
 	tw: ReturnType<typeof useTailwindEditor>;
+	forcePseudo: ReturnType<typeof useForcePseudo>;
 	hasBatches: boolean;
 	onApply: () => void;
 	onUndo: () => void;
@@ -23,12 +26,13 @@ interface StyleEditorProps {
 	componentInfo?: ComponentInfo | null;
 }
 
-export function StyleEditor({ selected, setSelected, editor, cr, tw, hasBatches, onApply, onUndo, onTailwindApply, editorUrl, componentInfo }: StyleEditorProps) {
+export function StyleEditor({ selected, setSelected, editor, cr, tw, forcePseudo, hasBatches, onApply, onUndo, onTailwindApply, editorUrl, componentInfo }: StyleEditorProps) {
 	const hasSource = editor.ruleGroups.length > 0;
 
 	return (
 		<>
 			<BreadcrumbNav selected={selected} onSelect={setSelected} />
+			<ForcePseudoPanel active={forcePseudo.active} onToggle={forcePseudo.toggle} />
 			<ComponentInfoPanel info={componentInfo ?? null} />
 
 			<GroupTabs
