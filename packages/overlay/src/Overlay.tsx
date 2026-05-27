@@ -9,6 +9,8 @@ import { useResizable } from "./hooks/useResizable";
 import { useRootVars } from "./hooks/useRootVars";
 import { useScssVars } from "./hooks/useScssVars";
 import { useComponentInfo } from "./hooks/useComponentInfo";
+import { useTailwindEditor } from "./hooks/useTailwindEditor";
+import { useSourceLocation } from "./hooks/useSourceLocation";
 import { groupKey } from "./css";
 import { ElementSearchBar } from "./components/ElementSearchBar";
 import { CssVarsPanel } from "./components/CssVarsPanel";
@@ -70,6 +72,8 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const rootVars = useRootVars(send);
 	const scssVars = useScssVars(send);
 	const componentInfo = useComponentInfo(selected);
+	const tw = useTailwindEditor(selected);
+	const sourceLocation = useSourceLocation(selected);
 
 	const showToast = () => {
 		if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -136,6 +140,14 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 		});
 		pushBatch(entries);
 		scssVars.apply();
+	};
+
+	const handleTailwindApply = () => {
+		lastAction.current = "css";
+		tw.pending.forEach((newCls, oldCls) => {
+			send({ type: "patch-tailwind", classes: tw.classes, oldClass: oldCls, newClass: newCls });
+		});
+		tw.reset();
 	};
 
 	const undoLastBatch = () => {
@@ -294,9 +306,11 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 							setSelected={setSelected}
 							editor={editor}
 							cr={cr}
+							tw={tw}
 							hasBatches={sessionBatches.length > 0}
 							onApply={handleApply}
 							onUndo={undoLastBatch}
+							onTailwindApply={handleTailwindApply}
 							editorUrl={editorUrl}
 							componentInfo={componentInfo}
 						/>

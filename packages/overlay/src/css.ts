@@ -247,6 +247,34 @@ function collectRootVars(rules: CSSRuleList, fileUrl: string, vars: RootVar[], s
 	}
 }
 
+function collectTailwindSelectors(rules: CSSRuleList, out: Set<string>): void {
+	for (const rule of Array.from(rules)) {
+		if (rule instanceof CSSStyleRule) {
+			out.add(rule.selectorText);
+		} else if ((rule as unknown as { cssRules?: CSSRuleList }).cssRules) {
+			collectTailwindSelectors((rule as unknown as { cssRules: CSSRuleList }).cssRules, out);
+		}
+	}
+}
+
+export function getTailwindClasses(el: Element): string[] {
+	const classList = Array.from(el.classList);
+	if (classList.length === 0) return [];
+
+	const tailwindSelectors = new Set<string>();
+	for (const sheet of Array.from(document.styleSheets)) {
+		if (!isTailwindSheet(sheet)) continue;
+		try {
+			collectTailwindSelectors(sheet.cssRules, tailwindSelectors);
+		} catch { /* cross-origin */ }
+	}
+
+	return classList.filter((cls) => {
+		const escaped = CSS.escape(cls);
+		return [...tailwindSelectors].some((sel) => sel.includes("." + escaped));
+	});
+}
+
 export function findRootVars(): RootVar[] {
 	const vars: RootVar[] = [];
 	const seen = new Set<string>();

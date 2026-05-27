@@ -3,23 +3,27 @@ import { GroupTabs } from "./GroupTabs";
 import { StyleRows } from "./StyleRows";
 import { AddPropertyRow } from "./AddPropertyRow";
 import { ComponentInfoPanel } from "./ComponentInfoPanel";
+import { TailwindPanel } from "./TailwindPanel";
 import type { useStyleEditor } from "../hooks/useStyleEditor";
 import type { useCreateRule } from "../hooks/useCreateRule";
 import type { ComponentInfo } from "../hooks/useComponentInfo";
+import type { useTailwindEditor } from "../hooks/useTailwindEditor";
 
 interface StyleEditorProps {
 	selected: Element;
 	setSelected: (el: Element) => void;
 	editor: ReturnType<typeof useStyleEditor>;
 	cr: ReturnType<typeof useCreateRule>;
+	tw: ReturnType<typeof useTailwindEditor>;
 	hasBatches: boolean;
 	onApply: () => void;
 	onUndo: () => void;
+	onTailwindApply: () => void;
 	editorUrl?: string | null;
 	componentInfo?: ComponentInfo | null;
 }
 
-export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onApply, onUndo, editorUrl, componentInfo }: StyleEditorProps) {
+export function StyleEditor({ selected, setSelected, editor, cr, tw, hasBatches, onApply, onUndo, onTailwindApply, editorUrl, componentInfo }: StyleEditorProps) {
 	const hasSource = editor.ruleGroups.length > 0;
 
 	return (
@@ -36,9 +40,11 @@ export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onA
 
 			{editor.ruleGroups.some((g) => g.isTailwind) && (
 				<p style={{ margin: "6px 0", fontSize: 10, color: "#f59e0b", lineHeight: 1.4 }}>
-					⚠ Tailwind — changes won't persist. Edit classes in HTML instead.
+					⚠ Tailwind — property changes won't persist. Use class swapper below.
 				</p>
 			)}
+
+			<TailwindPanel tw={tw} onApply={onTailwindApply} />
 
 			{editor.activeGroup && Object.keys(editor.activeStyles).length > 0 && (
 				<StyleRows

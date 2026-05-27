@@ -9,6 +9,7 @@ import { patchCss } from "./patchers/css";
 import { patchScss } from "./patchers/scss";
 import { patchVue } from "./patchers/vue";
 import { createRule } from "./patchers/create";
+import { patchTailwindClass } from "./patchers/tailwind";
 import { scanScssVars, patchScssVar } from "./patchers/scss-vars";
 import type { ScssVarDef } from "./patchers/scss-vars";
 
@@ -73,6 +74,25 @@ export function startWss(root: string, httpServer: CloseEmitter | null, port: nu
 					const ok = patchScssVar(fileUrl, name, value);
 					if (!ok) {
 						socket.send(JSON.stringify({ type: "error", message: `SCSS variable "${name}" not found in source file` }));
+					} else {
+						socket.send(JSON.stringify({ type: "patched" }));
+					}
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					socket.send(JSON.stringify({ type: "error", message }));
+				}
+				return;
+			}
+
+			if (msg.type === "patch-tailwind") {
+				const { classes, oldClass, newClass } = msg as unknown as {
+					type: string; classes: string[]; oldClass: string; newClass: string;
+				};
+				if (!oldClass || !Array.isArray(classes)) return;
+				try {
+					const result = patchTailwindClass(root, classes, oldClass, newClass ?? "");
+					if (!result.patched) {
+						socket.send(JSON.stringify({ type: "error", message: `Class "${oldClass}" not found in source files` }));
 					} else {
 						socket.send(JSON.stringify({ type: "patched" }));
 					}

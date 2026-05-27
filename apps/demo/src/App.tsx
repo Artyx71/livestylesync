@@ -69,7 +69,7 @@ function App() {
         <p className="text-sm text-violet-300">
           Pick this element — LSS will warn you it's Tailwind
         </p>
-        <button className="mt-4 bg-violet-500 hover:bg-violet-400 text-white text-sm font-medium px-4 py-2 rounded-lg">
+        <button className="mt-4 text-sm py-2 rounded-lg">
           Tailwind button
         </button>
       </div>
