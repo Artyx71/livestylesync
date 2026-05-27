@@ -46,6 +46,7 @@ test.describe("overlay lifecycle", () => {
 		await page.goto("/");
 		const overlay = await openOverlay(page);
 		await overlay.getByRole("button", { name: /Select Element/ }).click();
+		await page.waitForFunction(() => document.body.style.cursor === "crosshair");
 		await page.locator("button.counter").click({ force: true });
 		await expect(overlay.locator("text=button.counter")).toBeVisible();
 		await expect(overlay.locator("text=font-size")).toBeVisible();

@@ -13,6 +13,6 @@ export async function waitForConnected(page: Page, overlay: Locator): Promise<vo
 
 export async function selectElement(page: Page, overlay: Locator, selector: string): Promise<void> {
 	await overlay.getByRole("button", { name: /Select Element/ }).click();
-	await overlay.getByRole("button", { name: /Click on element/ }).waitFor({ state: "visible" });
+	await page.waitForFunction(() => document.body.style.cursor === "crosshair");
 	await page.locator(selector).click({ force: true });
 }
