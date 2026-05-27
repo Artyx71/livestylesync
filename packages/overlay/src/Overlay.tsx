@@ -8,6 +8,7 @@ import { useDraggable } from "./hooks/useDraggable";
 import { useResizable } from "./hooks/useResizable";
 import { useRootVars } from "./hooks/useRootVars";
 import { useScssVars } from "./hooks/useScssVars";
+import { useComponentInfo } from "./hooks/useComponentInfo";
 import { groupKey } from "./css";
 import { ElementSearchBar } from "./components/ElementSearchBar";
 import { CssVarsPanel } from "./components/CssVarsPanel";
@@ -68,6 +69,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const editor = useStyleEditor(selected, send);
 	const rootVars = useRootVars(send);
 	const scssVars = useScssVars(send);
+	const componentInfo = useComponentInfo(selected);
 
 	const showToast = () => {
 		if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -296,6 +298,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 							onApply={handleApply}
 							onUndo={undoLastBatch}
 							editorUrl={editorUrl}
+							componentInfo={componentInfo}
 						/>
 					)}
 

@@ -2,8 +2,10 @@ import { BreadcrumbNav } from "./BreadcrumbNav";
 import { GroupTabs } from "./GroupTabs";
 import { StyleRows } from "./StyleRows";
 import { AddPropertyRow } from "./AddPropertyRow";
+import { ComponentInfoPanel } from "./ComponentInfoPanel";
 import type { useStyleEditor } from "../hooks/useStyleEditor";
 import type { useCreateRule } from "../hooks/useCreateRule";
+import type { ComponentInfo } from "../hooks/useComponentInfo";
 
 interface StyleEditorProps {
 	selected: Element;
@@ -14,14 +16,16 @@ interface StyleEditorProps {
 	onApply: () => void;
 	onUndo: () => void;
 	editorUrl?: string | null;
+	componentInfo?: ComponentInfo | null;
 }
 
-export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onApply, onUndo, editorUrl }: StyleEditorProps) {
+export function StyleEditor({ selected, setSelected, editor, cr, hasBatches, onApply, onUndo, editorUrl, componentInfo }: StyleEditorProps) {
 	const hasSource = editor.ruleGroups.length > 0;
 
 	return (
 		<>
 			<BreadcrumbNav selected={selected} onSelect={setSelected} />
+			<ComponentInfoPanel info={componentInfo ?? null} />
 
 			<GroupTabs
 				groups={editor.ruleGroups}
