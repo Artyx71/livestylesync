@@ -6,6 +6,22 @@ import './App.css'
 import './test.scss'
 import styles from './Button.module.css'
 
+function StatusBadge({ label, count, active }: { label: string; count: number; active: boolean }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '4px 10px', borderRadius: 20,
+      background: active ? '#065f46' : '#1a1a2e',
+      color: active ? '#6ee7b7' : '#94a3b8',
+      border: `1px solid ${active ? '#059669' : '#2d2d4e'}`,
+      fontFamily: 'monospace', fontSize: 11,
+    }}>
+      {label}
+      <span style={{ background: active ? '#059669' : '#2d2d4e', borderRadius: 10, padding: '1px 6px' }}>{count}</span>
+    </span>
+  )
+}
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -35,6 +51,12 @@ function App() {
       <div className={styles.container}>
         <button type="button" className={styles.button}>CSS Module button</button>
         <button type="button" className={styles.button}>CSS Module button 2</button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+        <StatusBadge label="issues" count={42} active={true} />
+        <StatusBadge label="PRs" count={7} active={false} />
+        <StatusBadge label="stars" count={128} active={true} />
       </div>
 
       <div className="demo-card">
