@@ -12,9 +12,11 @@ import { useComponentInfo } from "./hooks/useComponentInfo";
 import { useTailwindEditor } from "./hooks/useTailwindEditor";
 import { useSourceLocation } from "./hooks/useSourceLocation";
 import { useForcePseudo } from "./hooks/useForcePseudo";
+import { useViewport } from "./hooks/useViewport";
 import { groupKey } from "./css";
 import { ElementSearchBar } from "./components/ElementSearchBar";
 import { CssVarsPanel } from "./components/CssVarsPanel";
+import { ViewportSwitcher } from "./components/ViewportSwitcher";
 import { ScssVarsPanel } from "./components/ScssVarsPanel";
 import { StyleEditor } from "./components/StyleEditor";
 import { SessionHistory } from "./components/SessionHistory";
@@ -75,6 +77,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const componentInfo = useComponentInfo(selected);
 	const tw = useTailwindEditor(selected);
 	const forcePseudo = useForcePseudo(selected);
+	const viewport = useViewport();
 	const sourceLocation = useSourceLocation(selected);
 
 	const showToast = () => {
@@ -276,6 +279,8 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					>
 						{picking ? "⊙ Click on element..." : "↖ Select Element"}
 					</button>
+
+					<ViewportSwitcher viewport={viewport} />
 
 					<ElementSearchBar {...elSearch} />
 
