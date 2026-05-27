@@ -1,3 +1,36 @@
+:root {
+	/* Colors */
+	--color-primary: #aa3bff;
+	--color-primary-hover: #9333ea;
+	--color-success: #10b981;
+	--color-danger: #ef4444;
+	--color-surface: #1a1a2e;
+	--color-border: #e5e4e7;
+
+	/* Spacing */
+	--spacing-xs: 4px;
+	--spacing-sm: 8px;
+	--spacing-md: 16px;
+	--spacing-lg: 24px;
+	--spacing-xl: 32px;
+
+	/* Typography */
+	--font-size-sm: 12px;
+	--font-size-base: 16px;
+	--font-size-lg: 20px;
+	--font-size-xl: 24px;
+
+	/* Radius */
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-full: 9999px;
+
+	/* Shadows */
+	--shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+	--shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+}
+
 .container-demo {
   container-type: inline-size;
   margin: 24px auto;

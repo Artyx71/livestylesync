@@ -8,7 +8,6 @@ import { useDraggable } from "./hooks/useDraggable";
 import { useResizable } from "./hooks/useResizable";
 import { useRootVars } from "./hooks/useRootVars";
 import { useScssVars } from "./hooks/useScssVars";
-import { useDesignTokens } from "./hooks/useDesignTokens";
 import { useComponentInfo } from "./hooks/useComponentInfo";
 import { useTailwindEditor } from "./hooks/useTailwindEditor";
 import { useSourceLocation } from "./hooks/useSourceLocation";
@@ -16,7 +15,6 @@ import { groupKey } from "./css";
 import { ElementSearchBar } from "./components/ElementSearchBar";
 import { CssVarsPanel } from "./components/CssVarsPanel";
 import { ScssVarsPanel } from "./components/ScssVarsPanel";
-import { DesignTokensPanel } from "./components/DesignTokensPanel";
 import { StyleEditor } from "./components/StyleEditor";
 import { SessionHistory } from "./components/SessionHistory";
 import type { LogBatch, LogEntry, ScssVar } from "./types";
@@ -25,7 +23,6 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const [open, setOpen] = useState(false);
 	const [varsOpen, setVarsOpen] = useState(false);
 	const [scssVarsOpen, setScssVarsOpen] = useState(false);
-	const [tokensOpen, setTokensOpen] = useState(false);
 	const [historyOpen, setHistoryOpen] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const [toast, setToast] = useState(false);
@@ -74,7 +71,6 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const editor = useStyleEditor(selected, send);
 	const rootVars = useRootVars(send);
 	const scssVars = useScssVars(send);
-	const designTokens = useDesignTokens(send);
 	const componentInfo = useComponentInfo(selected);
 	const tw = useTailwindEditor(selected);
 	const sourceLocation = useSourceLocation(selected);
@@ -302,18 +298,6 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 						onChange={scssVars.handleChange}
 						onApply={handleScssVarsApply}
 						onReset={scssVars.reset}
-					/>
-
-					<DesignTokensPanel
-						open={tokensOpen}
-						onToggle={() => { const next = !tokensOpen; setTokensOpen(next); if (next) designTokens.load(); }}
-						groups={designTokens.groups}
-						tokens={designTokens.tokens}
-						pending={designTokens.pending}
-						hasPending={designTokens.hasPending}
-						onChange={designTokens.handleChange}
-						onApply={designTokens.apply}
-						onReset={designTokens.reset}
 					/>
 
 					{selected && (
