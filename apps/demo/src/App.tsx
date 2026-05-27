@@ -4,6 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 import './test.scss'
+import styles from './Button.module.css'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -30,6 +31,11 @@ function App() {
           Count is {count}
         </button>
       </section>
+
+      <div className={styles.container}>
+        <button type="button" className={styles.button}>CSS Module button</button>
+        <button type="button" className={styles.button}>CSS Module button 2</button>
+      </div>
 
       <div className="demo-card">
         <p className="title">SCSS Test Card</p>

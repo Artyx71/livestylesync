@@ -181,7 +181,7 @@ export function findAllSourceStyles(el: Element): RuleGroup[] {
 			if (seenKeys.has(seenKey)) continue;
 			seenKeys.add(seenKey);
 
-			const isCssModule = /\.module\.css$/.test(fileUrl);
+			const isCssModule = /\.module\.css(\?|$)/.test(fileUrl);
 			const isVue = fileUrl.includes("?vue&type=style");
 			const isScoped = /\[data-v-[a-f0-9]+\]/.test(effectiveRaw);
 
@@ -196,7 +196,7 @@ export function findAllSourceStyles(el: Element): RuleGroup[] {
 				});
 			}
 
-			const cleanUrl = isVue ? fileUrl.split("?")[0] : fileUrl;
+			const cleanUrl = (isVue || isCssModule) ? fileUrl.split("?")[0] : fileUrl;
 
 			const styles: Record<string, string> = {};
 			for (const decl of raw.style.cssText.split(";")) {
