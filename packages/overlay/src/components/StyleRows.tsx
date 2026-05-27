@@ -100,6 +100,7 @@ export function StyleRows({ styles, pending, onChange }: Props) {
 						</div>
 					)}
 					<input
+						data-prop={prop}
 						style={{
 							flex: 1,
 							background: "#2d2d4e",

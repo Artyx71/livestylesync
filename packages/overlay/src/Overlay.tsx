@@ -258,7 +258,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 			/>
 
 			{open && (
-				<div ref={overlayRootRef} style={{ position: "fixed", left: pos.x, top: pos.y, width, maxHeight: "70vh", overflowY: "auto", background: "#1a1a2e", border: "1px solid #7C3AED", borderRadius: 8, padding: 16, zIndex: 9999, color: "#fff", fontFamily: "monospace", fontSize: 12, boxSizing: "border-box" }}>
+				<div ref={overlayRootRef} data-testid="lss-overlay" style={{ position: "fixed", left: pos.x, top: pos.y, width, maxHeight: "70vh", overflowY: "auto", background: "#1a1a2e", border: "1px solid #7C3AED", borderRadius: 8, padding: 16, zIndex: 9999, color: "#fff", fontFamily: "monospace", fontSize: 12, boxSizing: "border-box" }}>
 					<div onMouseDown={onResizeMouseDown} style={{ position: "absolute", top: 0, right: 0, width: 6, height: "100%", cursor: "ew-resize", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "0 8px 8px 0" }}>
 						<div style={{ width: 2, height: 24, background: "#4f46e5", borderRadius: 1, opacity: 0.5 }} />
 					</div>
