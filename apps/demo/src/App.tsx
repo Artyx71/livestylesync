@@ -1,177 +1,136 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
 import './test.scss'
 import styles from './Button.module.css'
 
-function StatusBadge({ label, count, active }: { label: string; count: number; active: boolean }) {
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 10px', borderRadius: 20,
-      background: active ? '#065f46' : '#1a1a2e',
-      color: active ? '#6ee7b7' : '#94a3b8',
-      border: `1px solid ${active ? '#059669' : '#2d2d4e'}`,
-      fontFamily: 'monospace', fontSize: 11,
-    }}>
-      {label}
-      <span style={{ background: active ? '#059669' : '#2d2d4e', borderRadius: 10, padding: '1px 6px' }}>{count}</span>
-    </span>
-  )
-}
+const FEATURES = [
+	{ icon: '↖', title: 'Element picker', desc: 'Click any element on the page to inspect all CSS rules — across selectors, media queries and pseudo-states.' },
+	{ icon: ':hover', title: 'Force pseudo-states', desc: 'Toggle :hover, :focus or :active to inspect and edit styles that only appear on interaction.' },
+	{ icon: '📐', title: 'Viewport switcher', desc: 'Simulate 375, 768, 1024 px breakpoints — or type any custom width — without resizing the browser.' },
+	{ icon: '--x', title: 'CSS custom properties', desc: 'Browse all :root variables grouped by type. Color swatches, search filter, native color picker.' },
+	{ icon: '$', title: 'SCSS variables', desc: 'Find and patch $variable declarations across your .scss files. Changes write back to source.' },
+	{ icon: '↩', title: 'Session history', desc: 'Every apply is logged as a batch. Undo the last batch or restore any previous state at any time.' },
+]
 
 function App() {
-  const [count, setCount] = useState(0)
+	return (
+		<div className="page">
+			<nav className="nav">
+				<div className="nav-inner">
+					<span className="nav-logo"><span className="nav-dot" />LiveStyleSync</span>
+					<div className="nav-links">
+						<a href="#features">Features</a>
+						<a href="#setup">Setup</a>
+						<a href="https://github.com/Artyx71/livestylesync" target="_blank" rel="noopener">GitHub</a>
+						<a href="https://www.npmjs.com/package/livestylesync" target="_blank" rel="noopener">npm</a>
+					</div>
+					<div className="nav-actions">
+						<button type="button" className="counter btn-primary">Get started</button>
+					</div>
+				</div>
+			</nav>
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+			<section className="hero">
+				<div className="hero-badge">v1.0.0 · Stable release</div>
+				<h1 className="hero-heading">Edit styles.<br />Ship faster.</h1>
+				<p className="hero-sub">
+					Click any element — tweak in the panel — changes land directly in your
+					source files. No copy-pasting between DevTools and your editor.
+				</p>
+				<div className="hero-cta">
+					<button type="button" className="btn-primary btn-lg">Try the overlay →</button>
+					<a href="https://github.com/Artyx71/livestylesync" className="btn-outline btn-lg" target="_blank" rel="noopener">View on GitHub</a>
+				</div>
+				<div className="hero-hint">Press <kbd>Alt+S</kbd> to open the overlay on this page</div>
+			</section>
 
-      <div className={styles.container}>
-        <button type="button" className={styles.button}>CSS Module button</button>
-        <button type="button" className={styles.button}>CSS Module button 2</button>
-      </div>
+			<section className="install" id="setup">
+				<div className="install-inner">
+					<div className="section-label">Quick start</div>
+					<h2 className="section-heading">Two lines to get going</h2>
+					<div className="code-block">
+						<div className="code-line"><span className="code-comment"># install</span></div>
+						<div className="code-line"><span className="code-cmd">npm i</span> <span className="code-pkg">livestylesync</span></div>
+					</div>
+					<div className="code-block" style={{ marginTop: 12 }}>
+						<div className="code-line"><span className="code-comment">// vite.config.ts</span></div>
+						<div className="code-line"><span className="code-kw">import</span> {'{ liveStyleSync }'} <span className="code-kw">from</span> <span className="code-str">'livestylesync/vite-plugin'</span></div>
+						<div className="code-line" style={{ marginTop: 8 }}><span className="code-kw">export default</span> defineConfig({'{'}</div>
+						<div className="code-line" style={{ paddingLeft: 20 }}>plugins: [<span className="code-fn">liveStyleSync</span>()],</div>
+						<div className="code-line">{'}'}</div>
+					</div>
+					<div className="code-block" style={{ marginTop: 12 }}>
+						<div className="code-line"><span className="code-comment">// main.tsx</span></div>
+						<div className="code-line"><span className="code-kw">import</span> {'{ mount }'} <span className="code-kw">from</span> <span className="code-str">'livestylesync/overlay'</span></div>
+						<div className="code-line"><span className="code-fn">mount</span>()</div>
+					</div>
+				</div>
+			</section>
 
-      <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
-        <StatusBadge label="issues" count={42} active={true} />
-        <StatusBadge label="PRs" count={7} active={false} />
-        <StatusBadge label="stars" count={128} active={true} />
-      </div>
+			<section className="features" id="features">
+				<div className="section-label">Features</div>
+				<h2 className="section-heading">Everything in the overlay</h2>
+				<div className="features-grid">
+					{FEATURES.map((f) => (
+						<div key={f.title} className="feature-card">
+							<span className="feature-icon">{f.icon}</span>
+							<h3 className="feature-title">{f.title}</h3>
+							<p className="feature-desc">{f.desc}</p>
+						</div>
+					))}
+				</div>
+			</section>
 
-      <div className="demo-card">
-        <p className="title">SCSS Test Card</p>
-        <p className="subtitle">Open "▸ SCSS $variables" in LSS to edit $card-accent, $card-bg, $card-text</p>
-      </div>
+			<section className="formats">
+				<div className="formats-inner">
+					<div className="section-label">Supported formats</div>
+					<div className="formats-grid">
+						{[
+							['Plain CSS', '✓'],
+							['SCSS', '✓'],
+							['CSS Modules', '✓'],
+							['Vue scoped styles', '✓'],
+							['Tailwind', '⚠ detected, warns'],
+						].map(([name, status]) => (
+							<div key={name} className="format-row">
+								<span className="format-name">{name}</span>
+								<span className="format-status">{status}</span>
+							</div>
+						))}
+					</div>
+				</div>
+			</section>
 
-      <div className="bg-violet-900 rounded-xl p-6 text-white max-w-sm mx-auto mt-4">
-        <p className="text-lg font-bold mb-2">Tailwind Card</p>
-        <p className="text-sm text-violet-300">
-          Pick this element — LSS will warn you it's Tailwind
-        </p>
-        <button className="mt-4 text-sm py-2 rounded-lg">
-          Tailwind button
-        </button>
-      </div>
+			{/* LSS test targets */}
+			<section className="lss-targets">
+				<p className="lss-label">↓ SCSS card — open "SCSS $variables" in the overlay</p>
+				<div className="demo-card">
+					<p className="title">SCSS Variables</p>
+					<p className="subtitle">Edit $card-accent, $card-bg, $card-text via the overlay</p>
+				</div>
 
-      <div className="container-demo">
-        <div className="container-inner">@container demo — pick me to edit container-query styles</div>
-      </div>
+				<p className="lss-label" style={{ marginTop: 24 }}>↓ CSS Modules</p>
+				<div className={styles.container}>
+					<button type="button" className={styles.button}>CSS Module button</button>
+				</div>
 
-      <div style={{ textAlign: "center", margin: "32px auto", maxWidth: 320 }}>
-        <p style={{ color: "#888", fontSize: 13, marginBottom: 12 }}>↓ No CSS source — pick to test rule creation</p>
-        <div data-testid="no-source-block">
-          <span>Plain unstyled block</span>
-        </div>
-      </div>
+				<p className="lss-label" style={{ marginTop: 24 }}>↓ No CSS source — test "Create new rule"</p>
+				<div data-testid="no-source-block">
+					<span>Unstyled element</span>
+				</div>
+			</section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+			<footer className="footer">
+				<div className="footer-inner">
+					<span className="nav-logo" style={{ fontSize: 14 }}><span className="nav-dot" />LiveStyleSync</span>
+					<div className="footer-links">
+						<a href="https://github.com/Artyx71/livestylesync" target="_blank" rel="noopener">GitHub</a>
+						<a href="https://www.npmjs.com/package/livestylesync" target="_blank" rel="noopener">npm</a>
+					</div>
+					<span className="footer-copy">MIT · by Andrey Gabaraev</span>
+				</div>
+			</footer>
+		</div>
+	)
 }
 
 export default App
