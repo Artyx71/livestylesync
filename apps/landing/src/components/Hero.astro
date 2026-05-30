@@ -50,6 +50,7 @@ const npm = "https://www.npmjs.com/package/livestylesync";
 
 			<div class="hero-cta">
 				<a href={gh} class="btn btn--primary" target="_blank" rel="noopener">View on GitHub</a>
+				<a href="https://stackblitz.com/github/Artyx71/livestylesync/tree/main/apps/demo" class="btn btn--try" target="_blank" rel="noopener">▶ Try online</a>
 				<a href="#setup" class="btn btn--ghost">Quick setup →</a>
 			</div>
 		</div>
@@ -387,6 +388,17 @@ const npm = "https://www.npmjs.com/package/livestylesync";
 		color: var(--text);
 		border-color: var(--muted);
 		background: var(--surface);
+	}
+
+	.btn--try {
+		background: transparent;
+		color: var(--green);
+		border: 1px solid rgba(16, 185, 129, 0.3);
+	}
+
+	.btn--try:hover {
+		background: rgba(16, 185, 129, 0.08);
+		border-color: rgba(16, 185, 129, 0.6);
 	}
 
 	/* ── Animated overlay preview ────────────── */
