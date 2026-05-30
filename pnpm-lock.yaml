@@ -11,8 +11,8 @@ importers:
   apps/demo:
     dependencies:
       livestylesync-overlay:
-        specifier: workspace:*
-        version: link:../../packages/overlay
+        specifier: ^1.0.0
+        version: 1.0.0
       react:
         specifier: ^19.2.5
         version: 19.2.6
@@ -53,6 +53,9 @@ importers:
       globals:
         specifier: ^17.5.0
         version: 17.6.0
+      livestylesync-vite-plugin:
+        specifier: ^1.0.0
+        version: 1.0.0(vite@8.0.11(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.7.0)(sass@1.99.0)(terser@5.48.0))
       sass:
         specifier: ^1.99.0
         version: 1.99.0

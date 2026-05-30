@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { liveStyleSync } from "../../packages/vite-plugin/src/index";
+import { liveStyleSync } from "livestylesync-vite-plugin";
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), liveStyleSync()],
