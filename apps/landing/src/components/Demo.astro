@@ -1,0 +1,414 @@
+<section class="demo" id="demo">
+	<div class="demo-inner">
+		<p class="demo-label">How it works</p>
+		<h2 class="demo-heading">Click. Edit. Saved.</h2>
+		<p class="demo-sub">
+			The panel reads your source files — changes go back to disk, Vite picks them up instantly.
+		</p>
+
+		<div class="browser">
+			<!-- Chrome bar -->
+			<div class="browser-chrome">
+				<span class="dot dot--red"></span>
+				<span class="dot dot--yellow"></span>
+				<span class="dot dot--green"></span>
+				<span class="url-bar">localhost:5173</span>
+			</div>
+
+			<!-- Page content inside browser -->
+			<div class="browser-body">
+				<div class="mock-page">
+					<div class="mock-nav">
+						<span class="mock-logo">● MyApp</span>
+					</div>
+					<div class="mock-hero">
+						<div class="mock-heading-wrap">
+							<h3 class="mock-heading">Ship faster</h3>
+						</div>
+						<p class="mock-sub-text">Edit styles without leaving the browser.</p>
+						<div class="mock-btn"></div>
+					</div>
+				</div>
+
+				<!-- LSS Overlay panel -->
+				<div class="lss-panel">
+					<div class="lss-header">
+						<span class="lss-title">LiveStyleSync</span>
+						<span class="lss-dot"></span>
+					</div>
+
+					<div class="lss-breadcrumb">
+						<span class="bc-dim">section.hero</span>
+						<span class="bc-sep"> › </span>
+						<span class="bc-lit">h3</span>
+					</div>
+
+					<div class="lss-rows">
+						<div class="lss-row">
+							<span class="row-prop">font-size</span>
+							<span class="row-val">2.5rem</span>
+						</div>
+						<div class="lss-row lss-row--active">
+							<span class="row-prop">color</span>
+							<span class="row-val-wrap">
+								<span class="color-swatch"></span>
+								<span class="row-val-old">#e2e8f0</span>
+								<span class="row-val-new">#7c3aed</span>
+								<span class="cursor">|</span>
+							</span>
+						</div>
+						<div class="lss-row">
+							<span class="row-prop">font-weight</span>
+							<span class="row-val">800</span>
+						</div>
+					</div>
+
+					<button class="lss-apply">✓ Apply 1 change</button>
+				</div>
+
+				<!-- Toast -->
+				<div class="save-toast">✓ Saved to App.css</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.demo {
+		padding: 96px 48px;
+		text-align: center;
+		border-top: 1px solid var(--border);
+	}
+
+	.demo-inner {
+		max-width: 860px;
+		margin: 0 auto;
+	}
+
+	.demo-label {
+		font-family: var(--mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--purple-lt);
+		margin-bottom: 16px;
+	}
+
+	.demo-heading {
+		font-family: var(--display);
+		font-size: clamp(2rem, 4vw, 3rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		color: var(--text);
+		margin-bottom: 16px;
+	}
+
+	.demo-sub {
+		font-size: 16px;
+		color: var(--text2);
+		margin-bottom: 56px;
+		max-width: 480px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	/* ── Browser shell ──────────────────────── */
+
+	.browser {
+		border: 1px solid var(--border2);
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow:
+			0 40px 80px rgba(0, 0, 0, 0.6),
+			0 0 0 1px rgba(124, 58, 237, 0.08);
+		text-align: left;
+	}
+
+	.browser-chrome {
+		background: var(--surface2);
+		border-bottom: 1px solid var(--border);
+		padding: 10px 16px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.dot {
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	.dot--red    { background: #ff5f57; }
+	.dot--yellow { background: #febc2e; }
+	.dot--green  { background: #28c840; }
+
+	.url-bar {
+		margin-left: 12px;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 5px;
+		padding: 3px 12px;
+		font-family: var(--mono);
+		font-size: 11px;
+		color: var(--muted);
+		flex: 1;
+		max-width: 200px;
+	}
+
+	/* ── Browser body ───────────────────────── */
+
+	.browser-body {
+		background: #0a0a14;
+		min-height: 340px;
+		position: relative;
+		display: flex;
+		overflow: hidden;
+	}
+
+	/* ── Mock page ──────────────────────────── */
+
+	.mock-page {
+		flex: 1;
+		padding: 0;
+	}
+
+	.mock-nav {
+		padding: 14px 24px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.mock-logo {
+		font-family: var(--mono);
+		font-size: 12px;
+		color: var(--text2);
+	}
+
+	.mock-hero {
+		padding: 36px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.mock-heading-wrap {
+		display: inline-block;
+		border-radius: 4px;
+		animation: headingHighlight 7s 0.5s infinite;
+	}
+
+	.mock-heading {
+		font-family: var(--display);
+		font-size: clamp(1.6rem, 3vw, 2.4rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		animation: headingColor 7s 0.5s infinite;
+	}
+
+	.mock-sub-text {
+		font-size: 13px;
+		color: var(--muted);
+		max-width: 260px;
+	}
+
+	.mock-btn {
+		width: 90px;
+		height: 30px;
+		background: var(--border2);
+		border-radius: 5px;
+		margin-top: 4px;
+	}
+
+	/* ── LSS Panel ──────────────────────────── */
+
+	.lss-panel {
+		width: 220px;
+		flex-shrink: 0;
+		background: var(--surface2);
+		border-left: 1px solid var(--border2);
+		font-family: var(--mono);
+		font-size: 11px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.lss-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--border);
+		background: rgba(8, 8, 16, 0.5);
+	}
+
+	.lss-title {
+		font-size: 11px;
+		font-weight: 500;
+		color: var(--text);
+	}
+
+	.lss-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--green);
+		box-shadow: 0 0 5px var(--green);
+	}
+
+	.lss-breadcrumb {
+		padding: 7px 12px;
+		border-bottom: 1px solid var(--border);
+		font-size: 10px;
+	}
+
+	.bc-dim { color: var(--muted); }
+	.bc-sep { color: var(--border2); }
+	.bc-lit { color: var(--purple-lt); }
+
+	.lss-rows {
+		padding: 6px 0;
+		flex: 1;
+	}
+
+	.lss-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 5px 12px;
+		font-size: 10px;
+		gap: 8px;
+	}
+
+	.lss-row--active {
+		background: var(--purple-dim);
+	}
+
+	.row-prop { color: var(--text2); flex-shrink: 0; }
+	.row-val  { color: var(--text); }
+
+	.row-val-wrap {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		position: relative;
+	}
+
+	.color-swatch {
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		flex-shrink: 0;
+		animation: swatchColor 7s 0.5s infinite;
+	}
+
+	.row-val-old {
+		color: var(--muted);
+		animation: valOld 7s 0.5s infinite;
+	}
+
+	.row-val-new {
+		color: var(--purple-lt);
+		position: absolute;
+		left: 15px;
+		animation: valNew 7s 0.5s infinite;
+	}
+
+	.cursor {
+		color: var(--purple-lt);
+		animation: cursorBlink 0.8s infinite, cursorShow 7s 0.5s infinite;
+		font-weight: 300;
+	}
+
+	.lss-apply {
+		margin: 8px 10px 10px;
+		padding: 7px 0;
+		border-radius: 5px;
+		border: 1px solid #059669;
+		background: #065f46;
+		color: #6ee7b7;
+		font-family: var(--mono);
+		font-size: 10px;
+		text-align: center;
+		cursor: pointer;
+		animation: applyGlow 7s 0.5s infinite;
+	}
+
+	/* ── Toast ──────────────────────────────── */
+
+	.save-toast {
+		position: absolute;
+		bottom: 16px;
+		right: 236px;
+		background: #065f46;
+		color: #6ee7b7;
+		border: 1px solid #059669;
+		border-radius: 6px;
+		padding: 5px 12px;
+		font-family: var(--mono);
+		font-size: 11px;
+		pointer-events: none;
+		animation: toastPop 7s 0.5s infinite;
+	}
+
+	/* ── Keyframes ──────────────────────────── */
+
+	@keyframes headingColor {
+		0%,  25%  { color: var(--text); }
+		45%, 75%  { color: var(--purple-lt); }
+		92%, 100% { color: var(--text); }
+	}
+
+	@keyframes headingHighlight {
+		0%,  28%  { outline: none; }
+		32%, 80%  { outline: 2px solid rgba(124, 58, 237, 0.6); }
+		92%, 100% { outline: none; }
+	}
+
+	@keyframes swatchColor {
+		0%,  25%  { background: #e2e8f0; }
+		45%, 75%  { background: #7c3aed; }
+		92%, 100% { background: #e2e8f0; }
+	}
+
+	@keyframes valOld {
+		0%,  28%  { opacity: 1; }
+		40%, 100% { opacity: 0; }
+	}
+
+	@keyframes valNew {
+		0%,  33%  { opacity: 0; }
+		45%, 78%  { opacity: 1; }
+		90%, 100% { opacity: 0; }
+	}
+
+	@keyframes cursorShow {
+		0%,  30%  { opacity: 1; }
+		80%, 100% { opacity: 0; }
+	}
+
+	@keyframes cursorBlink {
+		0%,  49% { opacity: 1; }
+		50%, 100%{ opacity: 0; }
+	}
+
+	@keyframes applyGlow {
+		0%,  42%  { background: #065f46; border-color: #059669; box-shadow: none; }
+		52%, 68%  { background: #047857; border-color: #10b981; box-shadow: 0 0 14px rgba(16, 185, 129, 0.45); }
+		78%, 100% { background: #065f46; border-color: #059669; box-shadow: none; }
+	}
+
+	@keyframes toastPop {
+		0%,  58%  { opacity: 0; transform: translateY(6px); }
+		68%, 82%  { opacity: 1; transform: translateY(0); }
+		92%, 100% { opacity: 0; transform: translateY(-3px); }
+	}
+
+	/* ── Responsive ─────────────────────────── */
+
+	@media (max-width: 640px) {
+		.demo { padding: 64px 20px; }
+		.lss-panel { display: none; }
+		.save-toast { right: 16px; }
+	}
+</style>
