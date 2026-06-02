@@ -72,6 +72,7 @@ export function useStyleEditor(selected: Element | null, send: (data: object) =>
 		if (!selected) return;
 		const groups = findAllSourceStyles(selected);
 		setRuleGroups(groups);
+		setActiveIdx((prev) => (prev < groups.length ? prev : 0));
 		setGroupStyles(Object.fromEntries(groups.map((g) => [groupKey(g), g.styles])));
 		setAllPending({});
 	};

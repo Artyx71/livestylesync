@@ -14,7 +14,11 @@ import { scanScssVars, patchScssVar } from "./patchers/scss-vars";
 import type { ScssVarDef } from "./patchers/scss-vars";
 
 const CSS_EXTS = new Set([".css", ".scss", ".vue"]);
-const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", ".nuxt", ".next", "out"]);
+const IGNORE_DIRS = new Set([
+	"node_modules", ".git", "dist", ".nuxt", ".next", "out",
+	"build", "output", "public", ".cache", ".turbo", ".nx",
+	"coverage", ".nyc_output", ".svelte-kit", ".output", "storybook-static",
+]);
 
 function findCssFiles(root: string, files: string[] = []): string[] {
 	try {

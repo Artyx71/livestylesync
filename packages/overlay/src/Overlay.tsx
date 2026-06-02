@@ -72,6 +72,10 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const elSearch = useElementSearch(overlayRootRef, searchHighlightRef, setSelected);
 	const cr = useCreateRule(selected, send, () => {});
 	const editor = useStyleEditor(selected, send);
+
+	useEffect(() => {
+		appliedState.current.clear();
+	}, [selected]);
 	const rootVars = useRootVars(send);
 	const scssVars = useScssVars(send);
 	const componentInfo = useComponentInfo(selected);
