@@ -1,3 +1,29 @@
+import type postcss from "postcss";
+
+export function resolveRuleSelector(rule: postcss.Rule): string {
+	const selectors = rule.selector.split(",").map((s) => s.trim());
+	let parent = rule.parent;
+
+	while (parent && "selector" in parent) {
+		const parentSelectors = (parent as postcss.Rule).selector.split(",").map((s) => s.trim());
+		const resolved: string[] = [];
+		for (const ps of parentSelectors) {
+			for (const cs of selectors) {
+				if (cs.includes("&")) {
+					resolved.push(cs.replace(/&/g, ps).trim());
+				} else {
+					resolved.push(`${ps} ${cs}`.trim());
+				}
+			}
+		}
+		selectors.length = 0;
+		selectors.push(...resolved);
+		parent = (parent as postcss.Rule).parent;
+	}
+
+	return selectors.join(", ");
+}
+
 export function camelToKebab(prop: string): string {
 	return prop.replace(/([A-Z])/g, "-$1").toLowerCase();
 }

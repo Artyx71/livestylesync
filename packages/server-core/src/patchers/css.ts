@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "fs";
 import postcss from "postcss";
-import { camelToKebab } from "./utils";
+import { camelToKebab, resolveRuleSelector } from "./utils";
 
 export function patchCss(filePath: string, selector: string, prop: string, value: string, mediaQuery?: string): { patched: boolean; line?: number } {
 	const cssProp = camelToKebab(prop);
@@ -18,7 +18,7 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 
 	root.walkRules((rule) => {
 		if (found) return false;
-		if (rule.selector.replace(/\s+/g, " ").trim() !== normalizedSelector) return;
+		if (resolveRuleSelector(rule).replace(/\s+/g, " ").trim() !== normalizedSelector) return;
 
 		if (normalizedMedia) {
 			let inTargetMedia = false;
@@ -59,7 +59,7 @@ export function patchCss(filePath: string, selector: string, prop: string, value
 	if (!found && normalizedMedia) {
 		root.walkRules((rule) => {
 			if (found) return false;
-			if (rule.selector.replace(/\s+/g, " ").trim() !== normalizedSelector) return;
+			if (resolveRuleSelector(rule).replace(/\s+/g, " ").trim() !== normalizedSelector) return;
 
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let p: any = rule.parent;

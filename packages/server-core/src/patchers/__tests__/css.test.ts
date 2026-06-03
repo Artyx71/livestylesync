@@ -86,6 +86,43 @@ describe("patchCss — CSS nesting selector { @media { } }", () => {
 	});
 });
 
+describe("patchCss — CSS Nesting Level 2 (nested rules)", () => {
+	it("patches property in directly nested rule", () => {
+		write(".card {\n  color: red;\n  h2 {\n    font-size: 24px;\n  }\n}");
+		patchCss(file, ".card h2", "font-size", "32px");
+		expect(read()).toContain("font-size: 32px");
+		expect(read()).not.toContain("font-size: 24px");
+	});
+
+	it("adds missing property to nested rule", () => {
+		write(".card {\n  h2 {\n    font-size: 24px;\n  }\n}");
+		patchCss(file, ".card h2", "color", "purple");
+		expect(read()).toContain("color: purple");
+	});
+
+	it("patches deeply nested rule", () => {
+		write(".page {\n  .card {\n    h2 {\n      color: red;\n    }\n  }\n}");
+		patchCss(file, ".page .card h2", "color", "blue");
+		expect(read()).toContain("color: blue");
+		expect(read()).not.toContain("color: red");
+	});
+
+	it("patches nested rule using & combinator", () => {
+		write(".btn {\n  color: red;\n  &:hover {\n    color: pink;\n  }\n}");
+		patchCss(file, ".btn:hover", "color", "purple");
+		expect(read()).toContain("color: purple");
+		expect(read()).not.toContain("color: pink");
+	});
+
+	it("does not patch unrelated nested rule", () => {
+		write(".card {\n  h2 { color: red; }\n  p { color: blue; }\n}");
+		patchCss(file, ".card h2", "color", "green");
+		const result = read();
+		expect(result).toContain("color: green");
+		expect(result).toContain("color: blue");
+	});
+});
+
 describe("patchCss — no match", () => {
 	it("does not modify file when selector not found", () => {
 		const original = ".other { color: red; }";
