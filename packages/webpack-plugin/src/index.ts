@@ -5,7 +5,7 @@ export interface LiveStyleSyncPluginOptions {
 	port?: number;
 }
 
-let started = false;
+const startedCompilers = new WeakMap<object, boolean>();
 
 export class LiveStyleSyncPlugin {
 	private port: number;
@@ -16,12 +16,13 @@ export class LiveStyleSyncPlugin {
 
 	apply(compiler: Compiler): void {
 		if (compiler.options.mode !== "development") return;
-		if (started) return;
+		if (startedCompilers.get(compiler)) return;
 
 		compiler.hooks.afterEnvironment.tap("LiveStyleSyncPlugin", () => {
-			if (started) return;
-			started = true;
-			startWss(compiler.context, null, this.port);
+			if (startedCompilers.get(compiler)) return;
+			startedCompilers.set(compiler, true);
+			const root = compiler.options.context ?? compiler.context;
+			startWss(root, null, this.port);
 		});
 	}
 }
