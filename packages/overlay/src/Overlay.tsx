@@ -39,8 +39,10 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 	const pendingRefresh = useRef(false);
 	const lastAction = useRef<"css" | "scss-var">("css");
 	const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const selectedRef = useRef<Element | null>(null);
 
 	const { picking, setPicking, selected, setSelected, highlightRef } = useElementPicker(overlayRootRef);
+	selectedRef.current = selected;
 	const { pos, onMouseDown: onDragStart } = useDraggable({ x: window.innerWidth - 320, y: window.innerHeight - 500 });
 	const { width, onResizeMouseDown } = useResizable(300);
 
@@ -171,9 +173,10 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 					send({ fileUrl: e.fileUrl, selector: e.selector, prop: e.prop, value: e.oldValue, mediaQuery: e.mediaQuery });
 					const stateKey = `${e.fileUrl}|||${e.selector}|||${e.prop}|||${e.mediaQuery ?? ""}`;
 					appliedState.current.set(stateKey, e.oldValue);
-					if (selected) {
+					const cur = selectedRef.current;
+					if (cur) {
 						try {
-							if (selected.matches(e.selector)) (selected as HTMLElement).style.setProperty(e.prop, e.oldValue);
+							if (cur.matches(e.selector)) (cur as HTMLElement).style.setProperty(e.prop, e.oldValue);
 						} catch { /* skip */ }
 					}
 				}
@@ -194,9 +197,10 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 			send({ fileUrl: e.fileUrl, selector: e.selector, prop: e.prop, value: e.oldValue, mediaQuery: e.mediaQuery });
 			const stateKey = `${e.fileUrl}|||${e.selector}|||${e.prop}|||${e.mediaQuery ?? ""}`;
 			appliedState.current.set(stateKey, e.oldValue);
-			if (selected) {
+			const cur = selectedRef.current;
+			if (cur) {
 				try {
-					if (selected.matches(e.selector)) (selected as HTMLElement).style.setProperty(e.prop, e.oldValue);
+					if (cur.matches(e.selector)) (cur as HTMLElement).style.setProperty(e.prop, e.oldValue);
 				} catch { /* skip */ }
 			}
 		});
