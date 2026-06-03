@@ -12,7 +12,10 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
-	"files": ["dist", "README.md"],
+	"files": [
+		"dist",
+		"README.md"
+	],
 	"scripts": {
 		"build": "tsup"
 	},
@@ -24,7 +27,7 @@
 		"livestylesync-webpack-plugin": "workspace:*"
 	},
 	"devDependencies": {
-		"@types/node": "^24.12.2",
+		"@types/node": "^24.12.4",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3"
 	}
