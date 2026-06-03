@@ -29,11 +29,17 @@ jobs:
 
       - name: Build packages
         run: |
+          pnpm --filter livestylesync-server-core build
           pnpm --filter livestylesync-overlay build
           pnpm --filter livestylesync-vite-plugin build
+          pnpm --filter livestylesync-webpack-plugin build
+          pnpm --filter livestylesync-nextjs build
+          pnpm --filter livestylesync build
 
       - name: Run tests
-        run: pnpm --filter livestylesync-vite-plugin test
+        run: |
+          pnpm --filter livestylesync-server-core test
+          pnpm --filter livestylesync-overlay test
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
