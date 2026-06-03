@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Edit styles in the browser. Changes go straight to your source files.",
 	"license": "MIT",
 	"type": "module",

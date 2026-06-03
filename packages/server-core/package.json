@@ -1,6 +1,6 @@
 {
 	"name": "livestylesync-server-core",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "Framework-agnostic WebSocket server for LiveStyleSync",
 	"license": "MIT",
 	"type": "module",
