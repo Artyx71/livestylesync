@@ -254,6 +254,7 @@ export function Overlay({ port = 3100 }: { port?: number }) {
 						onToggle={() => setHistoryOpen((v) => !v)}
 						onRestore={session.restore}
 						onExport={session.exportDiff}
+						onClear={session.clearSession}
 						copied={session.copied}
 					/>
 				</div>

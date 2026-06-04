@@ -6,10 +6,11 @@ interface SessionHistoryProps {
 	onToggle: () => void;
 	onRestore: (batch: LogBatch) => void;
 	onExport: () => void;
+	onClear: () => void;
 	copied: boolean;
 }
 
-export function SessionHistory({ batches, open, onToggle, onRestore, onExport, copied }: SessionHistoryProps) {
+export function SessionHistory({ batches, open, onToggle, onRestore, onExport, onClear, copied }: SessionHistoryProps) {
 	if (batches.length === 0) return null;
 
 	return (
@@ -81,23 +82,40 @@ export function SessionHistory({ batches, open, onToggle, onRestore, onExport, c
 							))}
 						</div>
 					))}
-					<button
-						onClick={onExport}
-						style={{
-							width: "100%",
-							padding: "4px 0",
-							marginTop: 4,
-							background: "transparent",
-							color: copied ? "#6ee7b7" : "#555",
-							border: "1px solid " + (copied ? "#059669" : "#333"),
-							borderRadius: 4,
-							cursor: "pointer",
-							fontFamily: "monospace",
-							fontSize: 10,
-						}}
-					>
-						{copied ? "✓ Copied!" : "📋 Export as CSS"}
-					</button>
+					<div style={{ display: "flex", gap: 4, marginTop: 4 }}>
+						<button
+							onClick={onExport}
+							style={{
+								flex: 1,
+								padding: "4px 0",
+								background: "transparent",
+								color: copied ? "#6ee7b7" : "#555",
+								border: "1px solid " + (copied ? "#059669" : "#333"),
+								borderRadius: 4,
+								cursor: "pointer",
+								fontFamily: "monospace",
+								fontSize: 10,
+							}}
+						>
+							{copied ? "✓ Copied!" : "📋 Export as CSS"}
+						</button>
+						<button
+							onClick={onClear}
+							title="Clear session history"
+							style={{
+								padding: "4px 8px",
+								background: "transparent",
+								color: "#555",
+								border: "1px solid #333",
+								borderRadius: 4,
+								cursor: "pointer",
+								fontFamily: "monospace",
+								fontSize: 10,
+							}}
+						>
+							✕ Clear
+						</button>
+					</div>
 				</div>
 			)}
 		</>

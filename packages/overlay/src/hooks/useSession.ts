@@ -1,7 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LogBatch, LogEntry } from "../types";
 
 type SendFn = (data: object) => void;
+
+const STORAGE_KEY = `lss:batches:${location.origin}`;
+
+function loadStored(): { batches: LogBatch[]; batchId: number } {
+	try {
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (!raw) return { batches: [], batchId: 0 };
+		return JSON.parse(raw);
+	} catch {
+		return { batches: [], batchId: 0 };
+	}
+}
+
+function saveStored(batches: LogBatch[], id: number) {
+	try {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify({ batches, batchId: id }));
+	} catch { /* quota exceeded */ }
+}
 
 export function useSession({
 	send,
@@ -12,11 +30,16 @@ export function useSession({
 	selected: Element | null;
 	selectedRef: React.RefObject<Element | null>;
 }) {
-	const [batches, setBatches] = useState<LogBatch[]>([]);
+	const stored = useMemo(() => loadStored(), []);
+	const [batches, setBatches] = useState<LogBatch[]>(stored.batches);
 	const [copied, setCopied] = useState(false);
 	const appliedState = useRef(new Map<string, string>());
-	const batchId = useRef(0);
+	const batchId = useRef(stored.batchId);
 	const pendingRefresh = useRef(false);
+
+	useEffect(() => {
+		saveStored(batches, batchId.current);
+	}, [batches]);
 
 	useEffect(() => {
 		appliedState.current.clear();
@@ -118,6 +141,11 @@ export function useSession({
 		});
 	};
 
+	const clearSession = () => {
+		setBatches([]);
+		localStorage.removeItem(STORAGE_KEY);
+	};
+
 	return {
 		batches,
 		hasBatches: batches.length > 0,
@@ -125,6 +153,7 @@ export function useSession({
 		undoLast,
 		restore,
 		exportDiff,
+		clearSession,
 		copied,
 		appliedState,
 		pendingRefresh,
