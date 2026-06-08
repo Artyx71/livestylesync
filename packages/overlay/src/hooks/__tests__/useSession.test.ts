@@ -26,6 +26,7 @@ function renderSession(selected: Element | null = null) {
 
 beforeEach(() => {
 	mockSend.mockClear();
+	localStorage.clear();
 	Object.assign(navigator, {
 		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
 	});
