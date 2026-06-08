@@ -3,7 +3,7 @@ import type { LogBatch, LogEntry } from "../types";
 
 type SendFn = (data: object) => void;
 
-const STORAGE_KEY = `lss:batches:${location.origin}`;
+const STORAGE_KEY = `lss:batches:${typeof location !== "undefined" ? location.origin : "ssr"}`;
 
 function loadStored(): { batches: LogBatch[]; batchId: number } {
 	try {
