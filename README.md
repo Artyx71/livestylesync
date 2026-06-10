@@ -7,7 +7,7 @@ No copy-pasting between DevTools and your editor.
 
 ---
 
-## Install
+## Install 
 
 **Vite / Vue / Nuxt / SvelteKit / Astro / Solid:**
 ```bash
