@@ -4,6 +4,9 @@
 	"description": "Edit styles in the browser. Changes go straight to your source files.",
 	"license": "MIT",
 	"type": "module",
+	"bin": {
+		"livestylesync": "./dist/cli.js"
+	},
 	"exports": {
 		"./overlay": {
 			"import": "./dist/overlay.js",
@@ -19,10 +22,11 @@
 		"README.md"
 	],
 	"scripts": {
-		"build": "tsup src/overlay.ts src/vite-plugin.ts --format esm --dts --external vite --external ws"
+		"build": "tsup src/overlay.ts src/vite-plugin.ts src/cli.ts --format esm --dts --external vite --external ws && chmod +x dist/cli.js"
 	},
 	"dependencies": {
 		"livestylesync-overlay": "^1.0.0",
+		"livestylesync-server-core": "workspace:*",
 		"livestylesync-vite-plugin": "^1.0.0"
 	},
 	"devDependencies": {
