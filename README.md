@@ -1,3 +1,5 @@
+
+
 # LiveStyleSync
 
 Edit styles in the browser. Changes go straight to your source files.
@@ -134,12 +136,14 @@ export default defineConfig({
 });
 ```
 
-```ts
-// src/app.html or src/routes/+layout.ts
+```html
+<!-- src/app.html -->
+<script type="module">
 if (import.meta.env.DEV) {
   const { mount } = await import("livestylesync-overlay");
   mount();
 }
+</script>
 ```
 
 ---
